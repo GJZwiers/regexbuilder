@@ -22,7 +22,7 @@ abstract class RegexBuilderBase {
 class PatternPartBuilder<T extends PatternPartBuilder<T>>
     extends RegexBuilderBase {
 
-    part(part: string): T {
+    add(part: string): T {
         this.pattern.parts.push(part);
         return <T><unknown>this;
     }

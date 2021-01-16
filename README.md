@@ -3,33 +3,30 @@ This module provides two fluent builder APIs to make regex patterns. One is used
 
 ## RegexBuilder
 ```typescript
-import { RegexBuilder } from 'https://deno.land/x/regexbuilder@0.1.1/mod.ts';
+import { Regex } from 'https://deno.land/x/regexbuilder/mod.ts';
 
-Regex.new().part('foo').part('bar');     >> /foobar/
+Regex.new().add('foo').add('bar');     >> /foobar/
 ```
-
 
 ```typescript
 Regex.new().capture('foo');    >> /(foo)/
 Regex.new().noncapture('bar');    >> /(?:bar)/
 ```
-Alternatively, you can use the more general `group` method to add groups.
+
 ```typescript
 Regex.new().group('cg', 'foo');    >> /(foo)/
 ```
 
-It is also possible to add named groups:
 ```typescript
 Regex.new().namedGroup('foo', 'bar');    >> /(?<foo>bar)/
 ```
-
 
 
 ## PatternBuilder
 provides a methodology for building regexes according to templates and can be used to manage the complexity of handling lengthy patterns.
 
 ```typescript
-import { PatternBuilder } from 'https://deno.land/x/regexbuilder@0.1.1/mod.ts';
+import { Pattern } from 'https://deno.land/x/regexbuilder/mod.ts';
 
 let pattern = Pattern.new()
     .settings({
