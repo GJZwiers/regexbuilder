@@ -10,14 +10,13 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: denolib/setup-deno@v2
+      - name: setup Actions
+        uses: actions/checkout@v2
+      - name: setup Deno
+        uses: denolib/setup-deno@v2
         with:
           deno-version: v1.x
-      - run: |
-          deno --version
+      - name: run tests
+        run: |
           deno test -A
           
-# deno run https://deno.land/std/examples/welcome.ts
-# deno install --allow-read -n deno_cat https://deno.land/std/examples/cat.ts
-# deno_cat ./README.md
