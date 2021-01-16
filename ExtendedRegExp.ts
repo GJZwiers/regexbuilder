@@ -1,5 +1,5 @@
 export class ExtendedRegExp {
-    constructor(private pattern: RegExp, private template: string) { }
+    constructor(private pattern: RegExp, private _template: string) { }
 
     get dotAll(): boolean {
         return this.pattern.dotAll;
@@ -45,10 +45,6 @@ export class ExtendedRegExp {
         return this.pattern.exec(string)
     }
 
-    getTemplate(): string {
-        return this.template;
-    }
-
     test(string: string): boolean {
         return this.pattern.test(string)
     }
@@ -71,5 +67,9 @@ export class ExtendedRegExp {
 
     split(string: string, limit: number | undefined): string[] {
         return string.split(this.pattern, limit);
+    }
+
+    template(): string {
+        return this._template;
     }
 }

@@ -1,6 +1,6 @@
-import { ExtendedRegExp } from './ExtendedRegExp.ts';
-import { DefaultSpecification, TemplateSpecification } from './TemplateSpecification.ts';
-import { Pattern } from './builder.ts'
+import { ExtendedRegExp } from '../ExtendedRegExp.ts';
+import { DefaultSpecification, TemplateSpecification } from '../template-spec/TemplateSpecification.ts';
+import { Pattern } from './Pattern.ts'
 
 class PatternCrafter {
     craft(pattern: Pattern): ExtendedRegExp[] {

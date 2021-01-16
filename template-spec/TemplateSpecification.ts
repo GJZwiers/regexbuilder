@@ -1,17 +1,17 @@
-import { RegexData, RegexSettings, RegexPlaceholders } from './interfaces.ts';
+import { PatternData, PatternSettings, PatternPlaceholders } from '../pattern-data/interfaces.ts';
 
 interface TemplateSpecification {
     buildTemplate(template: string) : string;
 }
 
 abstract class SpecificationBase {
-    constructor(protected data: RegexData, protected settings: RegexSettings) { }
+    constructor(protected data: PatternData, protected settings: PatternSettings) { }
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    private placeholders: RegexPlaceholders;
+    private placeholders: PatternPlaceholders;
 
-    constructor(data: RegexData, settings: RegexSettings, placeholders?: RegexPlaceholders) {
+    constructor(data: PatternData, settings: PatternSettings, placeholders?: PatternPlaceholders) {
         super(data, settings);
         this.placeholders = placeholders || {};
     }
