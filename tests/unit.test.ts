@@ -5,7 +5,7 @@ import { DefaultSpecification } from "../template-spec/TemplateSpecification.ts"
 import { Pattern } from '../patternbuilder/Pattern.ts';
 
 Deno.test("RegexBuilder - adds capturing group correctly with capturing()", () => {
-    assertEquals(Regex.new().capturing('foo').build(), /(foo)/);
+    assertEquals(Regex.new().capture('foo').build(), /(foo)/);
 });
 Deno.test("RegexBuilder - adds any group other than named group correctly with group()", () => {
     assertEquals(Regex.new().group('cg', 'foo').build(), /(foo)/);
