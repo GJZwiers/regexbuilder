@@ -16,7 +16,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu # runs a test on Ubuntu, Windows and macOS ${{ matrix.os }}
+    runs-on: ubuntu-latest # runs a test on Ubuntu, Windows and macOS ${{ matrix.os }}
 
     strategy:
       matrix:
