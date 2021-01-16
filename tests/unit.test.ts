@@ -21,13 +21,13 @@ Deno.test("RegexBuilder - adds named group correctly", () => {
 });
 
 Deno.test("Regex.compile()", () => {
-    assertEquals(Regex.new().part('foo').build(), new RegExp('foo'));
+    assertEquals(Regex.new().add('foo').build(), new RegExp('foo'));
 });
 
 Deno.test("Regex", () => {
     assertThrows(
         () => {
-        Regex.new().part('(foo').build();
+        Regex.new().add('(foo').build();
     });
 });
 

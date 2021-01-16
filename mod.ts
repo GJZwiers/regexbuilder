@@ -1,7 +1,6 @@
 import { Pattern } from './patternbuilder/Pattern.ts';
-export { Pattern as PatternBuilder }
+export { Pattern }
 import { Regex } from './regexbuilder/Regex.ts';
-export { Regex as RegexBuilder }
+export { Regex }
 
-export * from './regexbuilder/Regex.ts';
 export * from './ExtendedRegExp.ts';
