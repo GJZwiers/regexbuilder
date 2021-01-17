@@ -62,10 +62,6 @@ class PatternExclusionBuilder<T extends PatternExclusionBuilder<T>>
 
         return <T><unknown>this;
     }
-}
-
-class PatternWildcardBuilder<T extends PatternWildcardBuilder<T>>
-    extends PatternExclusionBuilder<PatternWildcardBuilder<T>> {
 
     wildcard(wc: string): T {
         this.pattern.data['wildcard'] = wc;
@@ -80,6 +76,6 @@ class PatternWildcardBuilder<T extends PatternWildcardBuilder<T>>
     }
 }
 
-class PatternBuilder extends PatternWildcardBuilder<PatternBuilder> { }
+class PatternBuilder extends PatternExclusionBuilder<PatternBuilder> { }
 
 export { Pattern, PatternBuilder }
