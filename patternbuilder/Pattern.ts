@@ -1,6 +1,7 @@
 import { PatternSettings, PatternData, PatternPlaceholders } from "../pattern-data/interfaces.ts";
 import { ExtendedRegExp } from "../ExtendedRegExp.ts";
 import { PatternCrafter } from "./PatternCrafter.ts";
+import { applyMixins } from '../utils/mixin.ts';
 
 class Pattern {
     public settings: PatternSettings = {template: '', flags: ''}
@@ -12,45 +13,38 @@ class Pattern {
     }
 }
 
-abstract class PatternBuilderBase {
-    protected pattern: Pattern = new Pattern();
+class PatternBuilderBase {
+    public pattern: Pattern = new Pattern();
 
     build(): ExtendedRegExp[] {
         return new PatternCrafter().craft(this.pattern);
     }
 }
 
-class PatternSettingsBuilder<T extends PatternSettingsBuilder<T>>
-    extends PatternBuilderBase {
+class PatternSettingsBuilder extends PatternBuilderBase {
 
-    settings(settings: PatternSettings): T {
+    settings(settings: PatternSettings): this {
         this.pattern.settings = settings;
-        return <T><unknown>this;
+        return this;
     }
 }
 
-class PatternDataBuilder<T extends PatternDataBuilder<T>>
-    extends PatternSettingsBuilder<PatternDataBuilder<T>> {
-    
-    data(data: PatternData): T {
+class PatternDataBuilder extends PatternBuilderBase {
+    data(data: PatternData): this {
         this.pattern.data = data;
-        return <T><unknown>this;
+        return this;
     }
 }
 
-class PatternPlaceholderBuilder<T extends PatternPlaceholderBuilder<T>>
-    extends PatternDataBuilder<PatternPlaceholderBuilder<T>> {
-
-    placeholders(ph: PatternPlaceholders): T {
+class PatternPlaceholderBuilder extends PatternBuilderBase {
+    placeholders(ph: PatternPlaceholders): this {
         this.pattern.placeholders = ph;
-        return <T><unknown>this;
+        return this;
     }
 }
 
-class PatternExclusionBuilder<T extends PatternExclusionBuilder<T>>
-    extends PatternPlaceholderBuilder<PatternExclusionBuilder<T>> {
-
-    except(exclusions: string[]): T {
+class PatternExclusionBuilder extends PatternBuilderBase {
+    except(exclusions: string[]): this {
         this.pattern.data['exclude'] = exclusions;
         if (typeof this.pattern.settings.template === 'string') {
             this.pattern.settings.template = `exclude|(${this.pattern.settings.template})`;
@@ -60,10 +54,12 @@ class PatternExclusionBuilder<T extends PatternExclusionBuilder<T>>
             }
         }
 
-        return <T><unknown>this;
+        return this;
     }
+}
 
-    wildcard(wc: string): T {
+class PatternWildCardBuilder extends PatternBuilderBase {
+    wildcard(wc: string): this {
         this.pattern.data['wildcard'] = wc;
         if (typeof this.pattern.settings.template === 'string') {
             this.pattern.settings.template = `${this.pattern.settings.template}|(wildcard)`;
@@ -72,10 +68,27 @@ class PatternExclusionBuilder<T extends PatternExclusionBuilder<T>>
                 this.pattern.settings.template[i] = `${this.pattern.settings.template[i]}|(wildcard)`;
             }
         }
-        return <T><unknown>this;
+        return this;
     }
 }
 
-class PatternBuilder extends PatternExclusionBuilder<PatternBuilder> { }
+class PatternBuilder {
+    public pattern: Pattern = new Pattern();
+}
+
+interface PatternBuilder extends PatternSettingsBuilder,
+    PatternDataBuilder,
+    PatternPlaceholderBuilder,
+    PatternExclusionBuilder,
+    PatternWildCardBuilder {}
+
+applyMixins(PatternBuilder, [
+    PatternBuilderBase,
+    PatternSettingsBuilder,
+    PatternDataBuilder,
+    PatternPlaceholderBuilder,
+    PatternExclusionBuilder,
+    PatternWildCardBuilder
+]);
 
 export { Pattern, PatternBuilder }

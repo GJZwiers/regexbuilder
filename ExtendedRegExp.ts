@@ -42,11 +42,11 @@ export class ExtendedRegExp {
     }
 
     exec(string: string): RegExpMatchArray | null {
-        return this.pattern.exec(string)
+        return this.pattern.exec(string);
     }
 
     test(string: string): boolean {
-        return this.pattern.test(string)
+        return this.pattern.test(string);
     }
 
     match(string: string): RegExpMatchArray | null {
@@ -55,6 +55,13 @@ export class ExtendedRegExp {
 
     matchAll(string: string): IterableIterator<RegExpMatchArray> {
         return string.matchAll(this.pattern);
+    }
+
+    matchMap(string: string) {
+        let matches = string.match(this.pattern);
+        if (!matches) return null;
+        let map = this.map(matches);
+        return map;
     }
 
     replace(string: string, replaceValue: string): string {
@@ -71,5 +78,23 @@ export class ExtendedRegExp {
 
     template(): string {
         return this._template;
+    }
+
+    map(matches: RegExpMatchArray) {
+        let template = this._template;
+        let map: any = {};
+        map['full_match'] = matches[0];
+        console.log(template);
+        for (let i = 1; i < matches.length - 1; i++) {
+            let group = template.match(/\(\?[<!][:=!]\w+(?=[()])|\(\?[:=!]\w+(?=[()])|(\w+(?=[()]))/);  // exclude|desired       
+            if (!group) continue;
+            template = template.replace(group[1], '');
+            
+            group[1] = group[1].replace(/[()]/g , '');
+            console.log(`group: ${group} matches: ${matches[i + 1]}`);
+            map[group[0]] = matches[i + 1];
+        }
+        
+        return map;
     }
 }

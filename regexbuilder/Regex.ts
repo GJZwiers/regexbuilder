@@ -1,8 +1,28 @@
+import { applyMixins } from '../utils/mixin.ts';
+
 type groupCode = 'cg' | 'ncg' | 'la' | 'nla' | 'lb' | 'nlb';
 
+function processGroupCode(type: groupCode): string {
+    if (type === 'cg') {
+        return '(';
+    } else if (type === 'ncg') {
+        return '(?:';
+    } else if (type === 'la') {
+        return '(?=';
+    } else if (type === 'lb') {
+        return '(?<=';
+    } else if (type === 'nla') {
+        return '(?!';
+    } else if (type === 'nlb') {
+        return '(?<!';
+    } else {
+        throw new Error(`Invalid group code: ${type}`)
+    }
+}
+
 class Regex {
-    public parts: Array<string> = []
-    public flags: string = ''
+    public parts: Array<string> = [];
+    public flags: string = '';
 
     static new(): RegexBuilder {
         return new RegexBuilder();
@@ -13,13 +33,13 @@ class Regex {
     }
 }
 
-class RegexBuilderBase {
+abstract class RegexBuilderBase {
     public pattern: Regex = new Regex();
     public nests = 0;
 
     build(): RegExp {
         if (this.nests > 0) {
-            throw new Error("Unfinished nest in pattern.")
+            throw new Error("Unfinished nest in pattern.");
         }
         return this.pattern.compile();
     }
@@ -40,7 +60,6 @@ class PatternPartBuilder extends RegexBuilderBase {
 }
 
 class PatternGroupBuilder extends RegexBuilderBase {
-    
     capture(cg: string): this {
         this.pattern.parts.push('(', cg, ')');
         return this;
@@ -84,7 +103,6 @@ class PatternGroupBuilder extends RegexBuilderBase {
 }
 
 class NestedGroupBuilder extends RegexBuilderBase {
-
     changeNestState(num: number, chars: string) {
         this.nests += num;
         this.pattern.parts.push(chars);
@@ -142,48 +160,23 @@ class NestedGroupBuilder extends RegexBuilderBase {
         this.changeNestState(1, `(?<${name}>${content}`);
         return this;
     }
-
 }
 
-class RegexBuilder { 
-    pattern: Regex = new Regex();
-    nests = 0;
+class RegexBuilder {
+    public nests = 0;
+    public pattern: Regex = new Regex();
 }
 
-interface RegexBuilder extends FlagsBuilder, PatternPartBuilder, PatternGroupBuilder, NestedGroupBuilder { }
+interface RegexBuilder extends FlagsBuilder,
+    PatternPartBuilder,
+    PatternGroupBuilder, 
+    NestedGroupBuilder {}
 
-applyMixins(RegexBuilder, [ RegexBuilderBase, FlagsBuilder, PatternPartBuilder, PatternGroupBuilder, NestedGroupBuilder]);
-
-function applyMixins(derivedCtor: any, constructors: any[]) {
-    constructors.forEach((baseCtor) => {
-        Object.getOwnPropertyNames(baseCtor.prototype).forEach((name) => {
-            Object.defineProperty(
-            derivedCtor.prototype,
-            name,
-            Object.getOwnPropertyDescriptor(baseCtor.prototype, name) ||
-                Object.create(null)
-            );
-        });
-    });
-}
-
-function processGroupCode(type: groupCode): string {
-    let grouptype = '';
-    if (type === 'cg') {
-        return grouptype = '(';
-    } else if (type === 'ncg') {
-        return grouptype = '(?:'
-    } else if (type === 'la') {
-        return grouptype = '(?='
-    } else if (type === 'lb') {
-        return grouptype = '(?<='
-    } else if (type === 'nla') {
-        return grouptype = '(?!'
-    } else if (type === 'nlb') {
-        return grouptype = '(?<!'
-    } else {
-        throw new Error(`Invalid group code ${type}.`)
-    }
-}
+applyMixins(RegexBuilder, [
+    RegexBuilderBase, 
+    FlagsBuilder, 
+    PatternPartBuilder,
+    PatternGroupBuilder, 
+    NestedGroupBuilder ]);
 
 export { Regex, RegexBuilder }

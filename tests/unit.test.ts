@@ -61,3 +61,9 @@ Deno.test("PatternBuilder - ", () => {
     assertArrayIncludes(regext, [new ExtendedRegExp(/bar/, 'foo')]);
     assertEquals(regext[0].test('bar'), true);
 });
+
+// Deno.test("PatternBuilder - excludes values correctly", () => {
+//     Pattern.new()
+//     .settings({template: 'foo'})
+//     .data({foo: 'bar'})
+// });
