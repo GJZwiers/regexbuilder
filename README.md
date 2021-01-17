@@ -2,29 +2,71 @@
 This module provides two fluent builder APIs to make regex patterns. One is used for piecewise building of a RegExp, while the other is used to create extended regexes from user-defined string templates.
 
 ## RegexBuilder
+Start building with `Regex.new()`:
 ```typescript
 import { Regex } from 'https://deno.land/x/regexbuilder/mod.ts';
 
-Regex.new().add('foo').add('bar');     >> /foobar/
+Regex.new()
+    .add('foo')
+    .add('bar');     >> /foobar/
 ```
 
 ```typescript
-Regex.new().capture('foo');    >> /(foo)/
-Regex.new().noncapture('bar');    >> /(?:bar)/
+    .capture('foo');    >> /(foo)/
+    .noncapture('bar');    >> /(?:bar)/
 ```
 
+### Groups
+There are two ways to add groups, either through its specific call or with `group`, providing one of the group codes followed by the content:
 ```typescript
-Regex.new().group('cg', 'foo');    >> /(foo)/
+    .lookahead('foo')
+    // or
+    .group('la', 'foo') //  codes are 'cg', 'ncg' ,'la', 'lb', 'nla', 'nlb'
+    // both lead to
+    >> /(?=foo)/
 ```
 
+Named groups have to be made with `namedGroup`:
 ```typescript
-Regex.new().namedGroup('foo', 'bar');    >> /(?<foo>bar)/
+.namedGroup('foo', 'bar');    >> /(?<foo>bar)/
 ```
 
+### Nesting
+A nested structure in the pattern can be started by calling `nest` for a capture group or specific calls to nest a different group. Call `unnest` to finish a nested tier, or provide it with an integer to finish multiple tiers at once:
+```typescript
+    Regex.new()
+        .nest()
+        .add('foo')
+        .nestNonCapture()
+        .add('bar')
+        .unnest()   // or use .unnest(2)
+        .unnest()
+        .build()
+
+        >> /(foo(?:bar))/
+```
+This can be shortened by using composite calls such as `nestAdd` to combine `nest` and `add` in once call. If no group type is provided it will default to a capturing group, in other cases you need to provide the group type as the second argument To nest a named group, use `nestNamed`.
+```typescript
+    Regex.new()
+        .nestAdd('foo')
+        .nestAdd('bar', 'ncg')
+        .unnest(2)
+        .build()
+
+        >> /(foo(?:bar))/
+```
+
+
+### Flags
+Add flags at any point in the building process with `flags`:
+```typescript
+    .flags('g')
+```
 
 ## PatternBuilder
-provides a methodology for building regexes according to templates and can be used to manage the complexity of handling lengthy patterns.
+is a methodology for building regexes according to templates and can be used to manage the complexity of handling lengthy patterns.
 
+Start building with `Pattern.new`:
 ```typescript
 import { Pattern } from 'https://deno.land/x/regexbuilder/mod.ts';
 
@@ -61,7 +103,7 @@ const ph = {
 };
 
 Pattern.new()
-    // ..
+    // .. settings, data
     .placeholders(ph)
 ```
 
@@ -83,5 +125,5 @@ Pattern.new()
     .data({ years: ['2018', '2019', '2020'] })
     .wildcard([String.raw`20\d{2}\b`])
 ```
-The pattern above will build to `/2018|2019|2020|(20\d{2})/`. Any matched wildcard year will be placed in group 1.
+The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
 
