@@ -1,4 +1,4 @@
-import { ExtendedRegExp } from '../ExtendedRegExp.ts';
+import { ExtendedRegExp } from '../extended-regexp/ExtendedRegExp.ts';
 import { DefaultSpecification, TemplateSpecification } from '../template-spec/TemplateSpecification.ts';
 import { Pattern } from './Pattern.ts'
 
@@ -7,7 +7,7 @@ class PatternCrafter {
         if (typeof pattern.settings.template === 'string') {
             pattern.settings.template = [pattern.settings.template];
         }
-
+        
         const tm = new PatternMaker(new DefaultSpecification(
             pattern.data, pattern.settings, pattern.placeholders));
         const patterns = tm.build(pattern.settings.template, pattern.settings.flags ?? '');
@@ -45,6 +45,7 @@ class PatternMaker {
         const regexes: Array<ReObject> = [];
         for (let template of templates) {
             const regexString = this.spec.buildTemplate(template);
+            
             const regex = this.buildRegex(regexString, flags, template);
             regexes.push(regex);
         }

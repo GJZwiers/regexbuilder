@@ -8,7 +8,8 @@ import { Regex } from 'https://deno.land/x/regexbuilder/mod.ts';
 
 Regex.new()
     .add('foo')
-    .add('bar');     >> /foobar/
+    .add('bar')
+    .build();       >> /foobar/
 ```
 
 ```typescript
@@ -45,7 +46,7 @@ A nested structure in the pattern can be started by calling `nest` for a capture
 
         >> /(foo(?:bar))/
 ```
-This can be shortened by using composite calls such as `nestAdd` to combine `nest` and `add` in once call. If no group type is provided it will default to a capturing group, in other cases you need to provide the group type as the second argument To nest a named group, use `nestNamed`.
+This can be shortened by using composite calls such as `nestAdd` to combine `nest` and `add` in once call. If no group type is provided it will default to a capturing group, in other cases you need to provide the group type as the second argument. To nest a named group, use `nestNamed`.
 ```typescript
     Regex.new()
         .nestAdd('foo')
@@ -81,10 +82,12 @@ let pattern = Pattern.new()
     })
     .placeholders({ foo: ['bar'] })
     .build();
+
+    >> /(hello|good morning|howdy) (?=world|new york|bar)/
 ```
 
 ### Templates
-Give a name to any arbitrary part of a pattern, whether they are inside a capture group or not. Any word in the template will be substituted with the values of the corresponding key in the data. Any array in the data will be joined with pipe `|` symbols to create alternates.
+give a name to any arbitrary part of a pattern, whether they are inside a capture group or not. Any word in the template will be substituted with the values of the corresponding key in the data. Any array in the data will be joined with pipe `|` symbols to create alternates.
 ```typescript
 .settings({
     template: 'field_names[: ]+(field_values)'
@@ -96,10 +99,10 @@ Give a name to any arbitrary part of a pattern, whether they are inside a captur
 ```
 
 ### Placeholders
-Declare a set of placeholders to be reused in multiple patterns:
+Declare a set of placeholder substitutes to reuse them in multiple patterns. Add placeholders to the data with double curly braces: `{{placeholder}}`
 ```typescript
 const ph = {
-    foo: ['bar', 'baz'],
+    foo: ['bar', 'baz'],    // changes {{foo}} in any key in the data to bar|baz
 };
 
 Pattern.new()
@@ -113,7 +116,7 @@ Exclude values you know you don't want in your match results. Note that this wil
 Pattern.new()
     .settings({ template: 'years'})
     .data({ years: String.raw`20\d{2}` })
-    .except(["2000"])
+    .except("2000")
 ```
 The pattern above will build to `/2000|(20\d{2})/`.
 
@@ -123,7 +126,8 @@ Add a wildcard to be searched for after a set of known values. Note that this wi
 Pattern.new()
     .settings({ template: 'years'})
     .data({ years: ['2018', '2019', '2020'] })
-    .wildcard([String.raw`20\d{2}\b`])
+    .wildcard(String.raw`20\d{2}\b`)
 ```
 The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
 
+### Template Mapping
