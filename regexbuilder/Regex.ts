@@ -72,21 +72,7 @@ class PatternGroupBuilder extends RegexBuilderBase {
     }
 
     group(type: groupCode, group: string) {
-        let grouptype = '';
-        if (type === 'cg') {
-            grouptype = '(';
-        } else if (type === 'ncg') {
-            grouptype = '(?:'
-        } else if (type === 'la') {
-            grouptype = '(?='
-        } else if (type === 'lb') {
-            grouptype = '(?<='
-        } else if (type === 'nla') {
-            grouptype = '(?!'
-        } else if (type === 'nlb') {
-            grouptype = '(?<!'
-        }
-
+        let grouptype = processGroupCode(type);
         this.pattern.parts.push(grouptype, group, ')');
         return this;
     }
@@ -114,7 +100,6 @@ class NestedGroupBuilder extends RegexBuilderBase {
             this.changeNestState(-1, ')');
             return this;
         }
-
         for (let i = 0; i < n; i++) {
             this.changeNestState(-1, ')');
         }
@@ -122,20 +107,7 @@ class NestedGroupBuilder extends RegexBuilderBase {
     }
 
     nestAdd(part: string, type: groupCode = 'cg'): this {
-        let grouptype: string = '';
-        if (type === 'cg') {
-            grouptype = '(';
-        } else if (type === 'ncg') {
-            grouptype = '(?:'
-        } else if (type === 'la') {
-            grouptype = '(?='
-        } else if (type === 'lb') {
-            grouptype = '(?<='
-        } else if (type === 'nla') {
-            grouptype = '(?!'
-        } else if (type === 'nlb') {
-            grouptype = '(?<!'
-        }
+        let grouptype = processGroupCode(type);
         this.changeNestState(1, grouptype);
         this.pattern.parts.push(part);
         return this;
@@ -193,6 +165,25 @@ function applyMixins(derivedCtor: any, constructors: any[]) {
             );
         });
     });
+}
+
+function processGroupCode(type: groupCode): string {
+    let grouptype = '';
+    if (type === 'cg') {
+        return grouptype = '(';
+    } else if (type === 'ncg') {
+        return grouptype = '(?:'
+    } else if (type === 'la') {
+        return grouptype = '(?='
+    } else if (type === 'lb') {
+        return grouptype = '(?<='
+    } else if (type === 'nla') {
+        return grouptype = '(?!'
+    } else if (type === 'nlb') {
+        return grouptype = '(?<!'
+    } else {
+        throw new Error(`Invalid group code ${type}.`)
+    }
 }
 
 export { Regex, RegexBuilder }
