@@ -1,4 +1,4 @@
-import { PatternData, PatternSettings, PatternPlaceholders } from '../pattern-data/interfaces.ts';
+import { PatternData, PatternSettings } from '../pattern-data/interfaces.ts';
 
 interface TemplateSpecification {
     buildTemplate(template: string) : string;
@@ -9,9 +9,9 @@ abstract class SpecificationBase {
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    private placeholders: PatternPlaceholders;
+    private placeholders: PatternData;
 
-    constructor(data: PatternData, settings: PatternSettings, placeholders?: PatternPlaceholders) {
+    constructor(data: PatternData, settings: PatternSettings, placeholders?: PatternData) {
         super(data, settings);
         this.placeholders = placeholders || {};
     }

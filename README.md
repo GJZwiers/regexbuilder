@@ -116,7 +116,7 @@ Exclude values you know you don't want in your match results. Note that this wil
 Pattern.new()
     .settings({ template: 'years'})
     .data({ years: String.raw`20\d{2}` })
-    .except(["2000"])
+    .except("2000")
 ```
 The pattern above will build to `/2000|(20\d{2})/`.
 
@@ -126,7 +126,8 @@ Add a wildcard to be searched for after a set of known values. Note that this wi
 Pattern.new()
     .settings({ template: 'years'})
     .data({ years: ['2018', '2019', '2020'] })
-    .wildcard([String.raw`20\d{2}\b`])
+    .wildcard(String.raw`20\d{2}\b`)
 ```
 The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
 
+### Template Mapping
