@@ -79,6 +79,7 @@ class PatternBuilder {
     public pattern: Pattern = new Pattern();
 }
 
+
 interface PatternBuilder extends PatternSettingsBuilder,
     PatternDataBuilder,
     PatternPlaceholderBuilder,

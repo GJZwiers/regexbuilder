@@ -1,4 +1,6 @@
 
+<!-- ![build](https://github.com/actions/GJZwiers/workflows/Deno/badge.svg) -->
+
 This module provides two fluent builder APIs to make regex patterns. One is used for piecewise building of a RegExp, while the other is used to create extended regexes from user-defined string templates.
 
 ## RegexBuilder
@@ -9,25 +11,25 @@ import { Regex } from 'https://deno.land/x/regexbuilder/mod.ts';
 Regex.new()
     .add('foo')
     .add('bar')
-    .build();       >> /foobar/
-```
-
-```typescript
-    .capture('foo');    >> /(foo)/
-    .noncapture('bar');    >> /(?:bar)/
+    .build();       
+    
+    >> /foobar/
 ```
 
 ### Groups
-There are two ways to add groups, either through its specific call or with `group`, providing one of the group codes followed by the content:
+To add groups either use the specific method call or use the more generic `group` method where you provide the content and a group type:
 ```typescript
-    .lookahead('foo')
-    // or
-    .group('la', 'foo') //  codes are 'cg', 'ncg' ,'la', 'lb', 'nla', 'nlb'
-    // both lead to
-    >> /(?=foo)/
+    .capture('foo');    >> /(foo)/
+```
+```typescript
+    .noncapture('bar');    >> /(?:bar)/
 ```
 
-Named groups have to be made with `namedGroup`:
+```typescript
+    .group('bar', 'ncg')    >> /(?:bar)/
+```
+
+Named groups should be made with `namedGroup`:
 ```typescript
 .namedGroup('foo', 'bar');    >> /(?<foo>bar)/
 ```
@@ -57,11 +59,72 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
         >> /(foo(?:bar))/
 ```
 
+### Assertions
+```typescript
+    .lineStart()
+    .add('foo')
+    .lineEnd()  
+    
+    >> /^foo$/
+```
+```typescript
+    .startsWith('foo')  >> /^foo/
+```
+```typescript
+    .endsWith('bar')    >> /bar$/
+```
+
+```typescript
+    .add('foo')
+    .lookahead('bar')
+    // or
+    .followedBy('bar')
+
+    >> /foo(?=bar)/
+```
+
+### Alternates
+```typescript
+    .alts(['foo','bar','baz');
+    >> /foo|bar|bar/
+
+    .altGroup(['foo', 'bar', 'baz'], 'ncg')
+    >> /(?:foo|bar|baz)/
+```
+
+### Quantifiers
+```typescript
+    .add('foo')
+    .times(2)
+    >> /foo{2}/ // matches fooo
+
+    .between(2, 5)
+    >> /foo{2,5}/   // matches foo with 2 to 5 more o's
+
+    .atleast(2)
+    >> /foo{2,}/    // matches foo with 2 to any more o's
+
+    .zeroPlus()
+    >> /foo*/   // matches fo with 0 to any more o's
+
+    .onePlus()
+    >> /foo+/   // matches fo with 1 to any more o's
+```
+
+### Backreferences
+```typescript
+    .capture('foo')
+    .add('[: ]+')
+    .ref(1)
+
+    >> /(foo)[: ]+\1/
+```
 
 ### Flags
-Add flags at any point in the building process with `flags`:
 ```typescript
+    .add('foo')
     .flags('g')
+    >> /foo/g
 ```
 
 ## PatternBuilder
@@ -129,5 +192,3 @@ Pattern.new()
     .wildcard(String.raw`20\d{2}\b`)
 ```
 The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
-
-### Template Mapping

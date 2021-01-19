@@ -70,6 +70,47 @@ class PatternGroupBuilder extends RegexBuilderBase {
         return this;
     }
 
+    group(type: groupCode, group: string) {
+        let grouptype = processGroupCode(type);
+        this.pattern.parts.push(grouptype, group, ')');
+        return this;
+    }
+
+    namedGroup(name: string, group: string): this {
+        this.pattern.parts.push('(?<', name, '>', group, ')');
+        return this;
+    }
+}
+
+class PatternAssertionBuilder extends RegexBuilderBase {
+    lineStart(): this {
+        this.pattern.parts.push('^');
+        return this;
+    }
+
+    lineEnd(): this {
+        this.pattern.parts.push('$');
+        return this;
+    }
+    
+    /**
+     * Combines RegexBuilder methods lineStart() and add(...).
+     * @param start 
+     */
+    startsWith(start: string): this {
+        this.pattern.parts.push('^', start);
+        return this;
+    }
+
+    /**
+     * Combines RegexBuilder methods add(...) and lineEnd().
+     * @param start 
+     */
+    endsWith(end: string): this {
+        this.pattern.parts.push(end, '$');
+        return this;
+    }
+
     lookahead(la: string): this {
         this.pattern.parts.push('(?=', la, ')');
         return this;
@@ -90,14 +131,102 @@ class PatternGroupBuilder extends RegexBuilderBase {
         return this;
     }
 
-    group(type: groupCode, group: string) {
-        let grouptype = processGroupCode(type);
-        this.pattern.parts.push(grouptype, group, ')');
+    followedBy(la: string): this {
+        return this.lookahead(la);
+    }
+
+    notFollowedBy(la: string): this {
+        return this.negatedLA(la);
+    }
+
+    precededBy(lb: string): this {
+        return this.lookbehind(lb);
+    }
+
+    notPrecededBy(lb: string): this {
+        return this.negatedLB(lb);
+    }
+}
+
+class PatternAlternationBuilder extends RegexBuilderBase {
+    alts(alts: string[]): this {
+        this.pattern.parts.push(alts.join('|'));
         return this;
     }
 
-    namedGroup(name: string, group: string): this {
-        this.pattern.parts.push('(?<', name, '>', group, ')');
+    altGroup(alts: string[], code: groupCode): this {
+        let grouptype = processGroupCode(code);
+        this.pattern.parts.push(grouptype, alts.join('|'), ')')
+        return this;
+    }
+}
+
+class RegexClassBuilder extends RegexBuilderBase {
+    class(content: string): this {
+       this.pattern.parts.push('[', content, ']'); 
+       return this;
+    }
+
+    negatedClass(content: string): this {
+        this.pattern.parts.push('[^', content, ']'); 
+        return this;
+     }
+}
+
+class RegexQuantifierBuilder extends RegexBuilderBase {
+    /**
+     * Adds an N quantifier {n}.
+     * @param n 
+     */
+    times(n: number): this {
+        this.checkDouble();
+        this.pattern.parts.push(`{${n}}`);
+        return this;
+    } 
+
+    /**
+     * Adds an N to M range quantifier {n,m}.
+     * @param n 
+     * @param m 
+     */
+    between(n: number, m: number): this {
+        this.checkDouble();
+        this.pattern.parts.push(`{${n},${m}}`);
+        return this;
+    }
+
+    /**
+     * Adds an N or more quantifier {n,}.
+     * @param n 
+     */
+    atleast(n: number) {
+        this.checkDouble();
+        this.pattern.parts.push(`{${n},}`);
+    }
+
+    onePlus() {
+        this.checkDouble();
+        this.pattern.parts.push(`+`);
+    }
+
+    zeroPlus() {
+        this.checkDouble();
+        this.pattern.parts.push(`*`);
+    }
+
+    private checkDouble() {
+        let lastElement = this.pattern.parts.length - 1;
+        if (/\{\d\}|\{\d,\s?\d\}$/.test(this.pattern.parts[lastElement])) {
+            console.log("Warning: A duplicate quantifier may have been added " +
+            "to the pattern. Check that you are not chaining the times() and " +
+            "between() methods.");
+        }
+    }
+}
+
+class RegexBackReferenceBuilder extends RegexBuilderBase {
+    ref(n: number): this {
+        this.pattern.parts.push(`\\${n}`);
         return this;
     }
 }
@@ -169,14 +298,24 @@ class RegexBuilder {
 
 interface RegexBuilder extends FlagsBuilder,
     PatternPartBuilder,
-    PatternGroupBuilder, 
+    PatternGroupBuilder,
+    PatternAssertionBuilder,
+    PatternAlternationBuilder,
+    RegexClassBuilder,
+    RegexQuantifierBuilder,
+    RegexBackReferenceBuilder,
     NestedGroupBuilder {}
 
 applyMixins(RegexBuilder, [
     RegexBuilderBase, 
     FlagsBuilder, 
     PatternPartBuilder,
-    PatternGroupBuilder, 
+    PatternGroupBuilder,
+    PatternAssertionBuilder,
+    PatternAlternationBuilder,
+    RegexClassBuilder,
+    RegexQuantifierBuilder,
+    RegexBackReferenceBuilder,
     NestedGroupBuilder ]);
 
 export { Regex, RegexBuilder }
