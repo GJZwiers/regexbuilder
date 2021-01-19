@@ -104,43 +104,41 @@ export class ExtendedRegExp {
      */
     map(matches: RegExpMatchArray) {
         let template: string = this._template;
-        let templateGroupPattern: RegExp = /\(\?[<!][:=!]\w+(?=[()])|\(\?[:=!]\w+(?=[()])|(((?<=\))\w+(?=\)))|\w+(?=[()]))/g;
+        let templateGroupPattern: RegExp = /\(\?[<!][:=!]\w+(?=[()])|\(\?[:=!]\w+(?=[()])|(\w+(?=[()]))/g;  //((?<=\))\w+(?=\))|(?<=\()(\w+)(?=\())|
         let groupNames: RegExpMatchArray[] = [...template.matchAll(templateGroupPattern)];
-        console.log(groupNames);
-
         // swap elements
-        for ( let i = 0; i < groupNames.length; i++) {
+        let count = 0;
+        for (let i = 0; i < groupNames.length; i++) {
+            if (groupNames[i][3]) {
+                count += 1;
+                continue;
+            }
             if (groupNames[i][2]) {
-                let previous = groupNames[i-1];
-                groupNames[i-1] = groupNames[i];
-                groupNames[i] = previous;
-                console.log(groupNames);
+                groupNames.splice(i - 1 - count, 0, groupNames[i]);
+                groupNames.pop();
             }
         }
-        
         // get all the capturing groups
         let captureGroups: string[] = [];
-        for (let groupName of groupNames) {
-            let capturing = groupName[1];
+        for (let i = 0; i < groupNames.length; i++) {
+            let capturing = groupNames[i][1];
             if (!capturing) continue;
             captureGroups.push(capturing);
         }
         if (hasDuplicates(captureGroups)) {
-            throw new Error('Found duplicate names in the template string which cannot be properly mapped.')
+            throw new Error(`Found duplicate capturing group names in the template string ${this._template} which could not be mapped.`)
         }
         let map: RegExpMatchMap = { full_match: matches[0] };
-        let diff = matches.length - groupNames.length;
         let offset = 0;
         for (let i = 0; i < groupNames.length; i++) {
-            let captureGroup = groupNames[i][1];
-            if (!captureGroup) {
+            let capturing = groupNames[i][1];
+            if (!capturing) {
                 offset += 1;
                 continue;
             }
-            map[captureGroup] = matches[i + 1 - offset];
+
+            map[capturing] = matches[i + 1 - offset];
         }
-        console.log(map);
-        
         return map;
     }
 }
