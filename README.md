@@ -1,5 +1,4 @@
-
-<!-- ![build](https://github.com/actions/GJZwiers/workflows/Deno/badge.svg) -->
+![build](https://github.com/actions/GJZwiers/workflows/Deno/badge.svg)
 
 This module provides two fluent builder APIs to make regex patterns. One is used for piecewise building of a RegExp, while the other is used to create extended regexes from user-defined string templates.
 
