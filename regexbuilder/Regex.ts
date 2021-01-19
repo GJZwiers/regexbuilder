@@ -199,27 +199,29 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
      * Adds an N or more quantifier {n,}.
      * @param n 
      */
-    atleast(n: number) {
+    atleast(n: number): this {
         this.checkDouble();
         this.pattern.parts.push(`{${n},}`);
+        return this;
     }
 
-    onePlus() {
+    onePlus(): this {
         this.checkDouble();
         this.pattern.parts.push(`+`);
+        return this;
     }
 
-    zeroPlus() {
+    zeroPlus(): this {
         this.checkDouble();
         this.pattern.parts.push(`*`);
+        return this;
     }
 
     private checkDouble() {
         let lastElement = this.pattern.parts.length - 1;
         if (/\{\d\}|\{\d,\s?\d\}$/.test(this.pattern.parts[lastElement])) {
             console.log("Warning: A duplicate quantifier may have been added " +
-            "to the pattern. Check that you are not chaining the times() and " +
-            "between() methods.");
+            "to the pattern. Check that you are not chaining quantifier methods.");
         }
     }
 }
