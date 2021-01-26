@@ -5,6 +5,10 @@ Deno.test("RegexBuilder - adds capturing group correctly with capturing()", () =
     assertEquals(Regex.new().capture('foo').build(), /(foo)/);
 });
 
+Deno.test("RegexBuilder - supports regex literal input", () => {
+    assertEquals(Regex.new().capture(/foo/).build(), /(foo)/);
+});
+
 Deno.test("RegexBuilder - adds any group other than named group correctly with group()", () => {
     assertEquals(Regex.new().group('cg', 'foo').build(), /(foo)/);
     assertEquals(Regex.new().group('ncg', 'foo').build(), /(?:foo)/);
