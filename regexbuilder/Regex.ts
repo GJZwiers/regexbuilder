@@ -20,6 +20,10 @@ function processGroupCode(type: groupCode): string {
     }
 }
 
+function stringOrRegExp(arg: string | RegExp) {
+    return (typeof arg === 'string') ?  arg : arg.source;
+}
+
 class Regex {
     public parts: Array<string> = [];
     public flags: string = '';
@@ -37,6 +41,10 @@ abstract class RegexBuilderBase {
     public pattern: Regex = new Regex();
     public nests = 0;
 
+    /**
+     * Finishes construction of a regular expression using the builder 
+     * and returns the pattern built.
+     */
     build(): RegExp {
         if (this.nests > 0) {
             throw new Error("Unfinished nest in pattern.");
@@ -53,31 +61,58 @@ class FlagsBuilder extends RegexBuilderBase {
 }
 
 class PatternPartBuilder extends RegexBuilderBase {
-    add(part: string): this {
-        this.pattern.parts.push(part);
+    /**
+     * Adds a part to the end of a regular expression. 
+     * Can be chained with other methods.
+     * @param part 
+     */
+    add(part: string | RegExp): this {
+        this.pattern.parts.push(stringOrRegExp(part));
         return this;
     }
 }
 
 class PatternGroupBuilder extends RegexBuilderBase {
-    capture(cg: string): this {
-        this.pattern.parts.push('(', cg, ')');
+    /**
+     * Adds a capturing group with content to the end of a regular expression. 
+     * Can be chained with other methods.
+     * @param cg 
+     */
+    capture(cg: string | RegExp): this {
+        this.pattern.parts.push('(', stringOrRegExp(cg), ')');
         return this;
     }
 
-    noncapture(ncg: string): this {
-        this.pattern.parts.push('(?:', ncg, ')');
+    /**
+     * Adds a non-capturing group with content to the end of a regular expression. 
+     * Can be chained with other methods.
+     * @param ncg 
+     */
+    noncapture(ncg: string | RegExp): this {
+        this.pattern.parts.push('(?:', stringOrRegExp(ncg), ')');
         return this;
     }
 
-    group(type: groupCode, group: string) {
+    /**
+     * Adds a group with content to the end of a regular expression. 
+     * Can be chained with other methods.
+     * @param type
+     * @param content 
+     */
+    group(type: groupCode, content: string | RegExp) {
         let grouptype = processGroupCode(type);
-        this.pattern.parts.push(grouptype, group, ')');
+        this.pattern.parts.push(grouptype, stringOrRegExp(content), ')');
         return this;
     }
 
-    namedGroup(name: string, group: string): this {
-        this.pattern.parts.push('(?<', name, '>', group, ')');
+    /**
+     * Adds a named capturing group with content to the end of a regular expression.
+     * Can be chained with other methods.
+     * @param name
+     * @param group 
+     */
+    namedGroup(name: string, group: string | RegExp): this {
+        this.pattern.parts.push('(?<', name, '>', stringOrRegExp(group), ')');
         return this;
     }
 }
@@ -97,8 +132,8 @@ class PatternAssertionBuilder extends RegexBuilderBase {
      * Combines RegexBuilder methods lineStart() and add(...).
      * @param start 
      */
-    startsWith(start: string): this {
-        this.pattern.parts.push('^', start);
+    startsWith(start: string | RegExp): this {
+        this.pattern.parts.push('^', stringOrRegExp(start));
         return this;
     }
 
@@ -111,45 +146,55 @@ class PatternAssertionBuilder extends RegexBuilderBase {
         return this;
     }
 
-    lookahead(la: string): this {
-        this.pattern.parts.push('(?=', la, ')');
+    lookahead(la: string | RegExp): this {
+        this.pattern.parts.push('(?=', stringOrRegExp(la), ')');
         return this;
     }
 
-    lookbehind(lb: string): this {
-        this.pattern.parts.push('(?<=', lb, ')');
+    lookbehind(lb: string | RegExp): this {
+        this.pattern.parts.push('(?<=', stringOrRegExp(lb), ')');
         return this;
     }
 
-    negatedLA(la: string): this {
-        this.pattern.parts.push('(?!', la, ')');
+    negatedLA(nla: string | RegExp): this {
+        this.pattern.parts.push('(?!', stringOrRegExp(nla), ')');
         return this;
     }
 
-    negatedLB(lb: string): this {
-        this.pattern.parts.push('(?<!', lb, ')');
+    negatedLB(nlb: string | RegExp): this {
+        this.pattern.parts.push('(?<!', stringOrRegExp(nlb), ')');
         return this;
     }
 
-    followedBy(la: string): this {
+    followedBy(la: string | RegExp): this {
         return this.lookahead(la);
     }
 
-    notFollowedBy(la: string): this {
+    notFollowedBy(la: string | RegExp): this {
         return this.negatedLA(la);
     }
 
-    precededBy(lb: string): this {
+    precededBy(lb: string | RegExp): this {
         return this.lookbehind(lb);
     }
 
-    notPrecededBy(lb: string): this {
+    notPrecededBy(lb: string | RegExp): this {
         return this.negatedLB(lb);
     }
 }
 
 class PatternAlternationBuilder extends RegexBuilderBase {
-    alts(alts: string[]): this {
+    /**
+     * Adds a list of alternation values to the end of a regular expression. 
+     * Can be chained with other builder methods.
+     * @param alts 
+     */
+    alts(alts: string[] | RegExp[]): this {
+        alts.forEach((item: string | RegExp, index: number, arr: string[] | RegExp[]) => {
+            if (item instanceof RegExp) {
+                arr[index] = item.source;
+            }
+        });
         this.pattern.parts.push(alts.join('|'));
         return this;
     }
@@ -162,13 +207,13 @@ class PatternAlternationBuilder extends RegexBuilderBase {
 }
 
 class RegexClassBuilder extends RegexBuilderBase {
-    class(content: string): this {
-       this.pattern.parts.push('[', content, ']'); 
+    class(content: string | RegExp): this {
+       this.pattern.parts.push('[', stringOrRegExp(content), ']'); 
        return this;
     }
 
-    negatedClass(content: string): this {
-        this.pattern.parts.push('[^', content, ']'); 
+    negatedClass(content: string | RegExp): this {
+        this.pattern.parts.push('[^', stringOrRegExp(content), ']'); 
         return this;
      }
 }
@@ -255,10 +300,10 @@ class NestedGroupBuilder extends RegexBuilderBase {
         return this;
     }
 
-    nestAdd(part: string, type: groupCode = 'cg'): this {
+    nestAdd(part: string | RegExp, type: groupCode = 'cg'): this {
         let grouptype = processGroupCode(type);
         this.changeNestState(1, grouptype);
-        this.pattern.parts.push(part);
+        this.pattern.parts.push(stringOrRegExp(part));
         return this;
     }
 
@@ -287,8 +332,8 @@ class NestedGroupBuilder extends RegexBuilderBase {
         return this;
     }
 
-    nestNamed(name: string, content: string): this {
-        this.changeNestState(1, `(?<${name}>${content}`);
+    nestNamed(name: string, content: string | RegExp): this {
+        this.changeNestState(1, `(?<${name}>${stringOrRegExp(content)}`);
         return this;
     }
 }
