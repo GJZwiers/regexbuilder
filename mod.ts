@@ -6,8 +6,7 @@ export * from './extended-regexp/ExtendedRegExp.ts';
 
 function main() {
     let re = Regex.new()
-        .alts([/foo/, /bar/, /baz/])
-        .namedGroup('bla', /woo/)
+        .alts([/foo/, /bar/, /baz/], /./)
         .build()
     console.log(re);
 }
