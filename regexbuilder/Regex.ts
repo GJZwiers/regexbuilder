@@ -189,19 +189,19 @@ class PatternAlternationBuilder extends RegexBuilderBase {
      * Can be chained with other builder methods.
      * @param alts 
      */
-    alts(alts: string[] | RegExp[]): this {
+    alts(alts: string[] | RegExp[], separator: string | RegExp = '|'): this {
         alts.forEach((item: string | RegExp, index: number, arr: string[] | RegExp[]) => {
             if (item instanceof RegExp) {
                 arr[index] = item.source;
             }
         });
-        this.pattern.parts.push(alts.join('|'));
+        this.pattern.parts.push(alts.join(stringOrRegExp(separator)));
         return this;
     }
 
-    altGroup(alts: string[], code: groupCode): this {
+    altGroup(alts: string[], code: groupCode, separator: string = '|'): this {
         let grouptype = processGroupCode(code);
-        this.pattern.parts.push(grouptype, alts.join('|'), ')')
+        this.pattern.parts.push(grouptype, alts.join(separator), ')')
         return this;
     }
 }

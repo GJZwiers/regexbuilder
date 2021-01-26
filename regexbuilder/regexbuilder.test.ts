@@ -35,3 +35,11 @@ Deno.test("RegexBuilder - throws when building an invalid pattern", () => {
 Deno.test("RegexBuilder - adds flags correctly", () => {
     assertEquals(Regex.new().add('foo').flags('gi').build(), /foo/gi);
 });
+
+Deno.test("RegexBuilder - handles user-specified separator for arrays", () => {
+    assertEquals(Regex.new().alts(['foo', 'bar', 'baz'], '.').build(), /foo.bar.baz/);
+});
+
+Deno.test("RegexBuilder - handles regex literals in arrays and user-specified separator", () => {
+    assertEquals(Regex.new().alts([/foo/, /bar/, /baz/], /./).build(), /foo.bar.baz/);
+});

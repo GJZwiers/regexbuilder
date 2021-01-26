@@ -15,8 +15,17 @@ Regex.new()
     >> /foobar/
 ```
 
+Adding regex literals together is also supported:
+```typescript
+    .add(/foo/)
+    .add(/bar/)
+    .build();       
+    
+    >> /foobar/
+```
+
 ### Groups
-To add groups either use the specific method call or use the more generic `group` method where you provide the content and a group type:
+To add groups either use the specific method call or use the more general `group` method where you provide the content and the group type:
 ```typescript
     .capture('foo');    >> /(foo)/
 ```
@@ -126,6 +135,8 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /foo/g
 ```
 
+---
+
 ## PatternBuilder
 is a methodology for building regexes according to templates and can be used to manage the complexity of handling lengthy patterns.
 
@@ -139,8 +150,8 @@ let pattern = Pattern.new()
         flags: 'i'
     })
     .data({
-        greetings: [ 'hello', 'good morning', 'howdy' ],
-        regions: [ 'world', 'new york', '{{foo}}' ]
+        greetings: ['hello', 'good morning', 'howdy'],
+        regions: ['world', 'new york', '{{foo}}']
     })
     .placeholders({ foo: ['bar'] })
     .build();
@@ -156,7 +167,7 @@ give a name to any arbitrary part of a pattern, whether they are inside a captur
 })
 .data({
     field_names: ['Product Volume', 'volume']
-    field_values: [ '100ml', '5L', '\\d{1,4}[cml]']
+    field_values: ['100ml', '5L', String.raw`\d{1,4}[cml]`]
 })
 ```
 
