@@ -12,11 +12,11 @@ This module provides two fluent builder APIs to make regex patterns. One is used
    * [Backreferences](#backreferences)  
    * [Flags](#flags)  
 - [PatternBuilder](#patternbuilder)  
-   * [Templates](templates)  
-   * [Placeholders](placeholders)  
-   * [Exceptions](exceptions)  
-   * [Wildcard Pattern](wildcard-pattern)  
-   * [Match Maps](match-maps)
+   * [Templates](#templates)  
+   * [Placeholders](#placeholders)  
+   * [Exceptions](#exceptions)  
+   * [Wildcard Pattern](#wildcard-pattern)  
+   * [Match Maps](#match-maps)
 
 ---
 
