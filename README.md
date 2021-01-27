@@ -2,6 +2,24 @@
 
 This module provides two fluent builder APIs to make regex patterns. One is used for piecewise building of a RegExp, while the other is used to create extended regexes from user-defined string templates.
 
+# Table of Contents
+- [RegexBuilder](#regexbuilder)  
+   * [Groups](#groups)  
+   * [Nesting](#nesting)  
+   * [Assertions](#assertions)  
+   * [Alternation](#alternation)  
+   * [Quantifiers](#quantifiers)  
+   * [Backreferences](#backreferences)  
+   * [Flags](#flags)  
+- [PatternBuilder](#patternbuilder)  
+   * [Templates](#templates)  
+   * [Placeholders](#placeholders)  
+   * [Exceptions](#exceptions)  
+   * [Wildcard Pattern](#wildcard-pattern)  
+   * [Match Maps](#match-maps)
+
+---
+
 ## RegexBuilder
 Start building with `Regex.new()`:
 ```typescript
@@ -91,10 +109,13 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /foo(?=bar)/
 ```
 
-### Alternates
+### Alternation
 ```typescript
     .alts(['foo','bar','baz');
-    >> /foo|bar|bar/
+    >> /foo|bar|baz/
+
+    .alts(['foo','bar','baz', '.');
+    >> /foo.bar.baz/
 
     .altGroup(['foo', 'bar', 'baz'], 'ncg')
     >> /(?:foo|bar|baz)/
@@ -193,7 +214,7 @@ Pattern.new()
 ```
 The pattern above will build to `/2000|(20\d{2})/`.
 
-### Wildcards
+### Wildcard Pattern
 Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.
 ```typescript
 Pattern.new()
@@ -202,3 +223,17 @@ Pattern.new()
     .wildcard(String.raw`20\d{2}\b`)
 ```
 The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
+
+### Match Maps
+Match results can be mapped to their pattern's template with the `matchMap` method:
+```typescript
+.settings({ template: '(greeting) (region)' })
+.data({ greeting: 'hello', region: 'world' })
+.build()
+
+>> /(hello) (world)/
+
+pattern.matchMap('hello world')
+
+>> { full_match: 'hello world', greeting: 'hello', region: 'world' }
+```
