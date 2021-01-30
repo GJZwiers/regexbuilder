@@ -1,7 +1,13 @@
 import { TemplateGroupHandler } from "../template-group-handler/TemplateGroupHandler.ts";
 
+interface RegExpMatchMap {
+    full_match: string,
+    [key: string]: string
+}
+
 /**
  * Decorated JavaScript RegExp with additional methods and properties.
+ * @param pattern - a regular expression
  * @param _template - a string template describing a regular expression structure
  */
 export class ExtendedRegExp {
@@ -75,6 +81,8 @@ export class ExtendedRegExp {
         return string.split(this.pattern, limit);
     }
 
+    // -----extra methods-----
+
     template(): string {
         return this._template;
     }
@@ -88,11 +96,10 @@ export class ExtendedRegExp {
      * @param {string} string
      * @returns {RegExpMatchMap} map of matches
      */
-    matchMap(string: string) {
+    matchMap(string: string): RegExpMatchMap | null {
         let matches = string.match(this.pattern);
         if (!matches) return null;
-        let map = this.map(matches);
-        return map;
+        return this.map(matches);
     }
 
     /**
@@ -104,17 +111,12 @@ export class ExtendedRegExp {
      * { full_match: 'hello world', region: 'world'}.
      * @param matches - An array of regular expression matches.
      */
-    map(matches: RegExpMatchArray) {
-        let groupNames = new TemplateGroupHandler(this._template).handleBrackets();
-        let map: RegExpMatchMap = { full_match: matches[0] };
+    map(matches: RegExpMatchArray): RegExpMatchMap {
+        const map: RegExpMatchMap = { full_match: matches[0] };
+        const groupNames = new TemplateGroupHandler(this._template).handleBrackets();
         for(let [i, name] of groupNames.entries()) {
             map[name] = matches[i + 1];
         }
         return map;
     }
-}
-
-interface RegExpMatchMap {
-    full_match: string,
-    [key: string]: string
 }

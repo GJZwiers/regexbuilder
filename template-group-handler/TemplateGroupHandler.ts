@@ -1,38 +1,25 @@
 import { hasDuplicates } from "../utils/duplicates.ts";
 
-interface CharPos {
+interface CharPositions {
     char: string,
     index: number
 }
 
-export interface HandlesParentheses {
+interface HandlesParentheses {
     handleBrackets(): string[]
 }
 
-export class TemplateGroupHandler implements HandlesParentheses {
-    private openers: CharPos[] = [];
-    private template_units: string[] = [];
-    private str: string;
+abstract class TemplateStringHandler {
+    protected templateUnits: string[] = [];
+    protected openers: CharPositions[] = [];
+    constructor(protected str: string) {} 
+}
 
-    constructor(str: string,) {
-        this.str = str;
-    }
-
-    /**
-     * This method is for unit testing purposes.
-     * @param value 
-     */
-    _reset(value: string) {
-        this.str = value;
-        this.openers = [];
-        this.template_units = [];
-        return this;
-    }
-
+class TemplateGroupHandler extends TemplateStringHandler implements HandlesParentheses {
     handleBrackets(): string[] {
         this.handle();
-        this.template_units = this.clean();
-        return this.template_units;
+        this.templateUnits = this.clean();
+        return this.templateUnits;
     }
 
     private handle(): void {
@@ -46,7 +33,7 @@ export class TemplateGroupHandler implements HandlesParentheses {
                 template_unit.unshift(sub);
                 this.openers.pop();
                 if (this.openers.length === 0) {
-                    this.template_units = this.template_units.concat(template_unit);
+                    this.templateUnits = this.templateUnits.concat(template_unit);
                     template_unit = [];
                 } 
                 this.str = this.str.replace(sub, '');
@@ -55,16 +42,18 @@ export class TemplateGroupHandler implements HandlesParentheses {
         }
     }
 
-    private clean() {
-        if (hasDuplicates(this.template_units)) {
-            throw new Error('Found duplicate template group names.');
+    private clean(): string[] {
+        if (hasDuplicates(this.templateUnits)) {
+            throw new Error('(regexbuilder) Error: Cannot map duplicate template variables.');
         }
-        return this.template_units
-        .filter(e => {
-            return !/\?[:<=!]?/.test(e);
-        })
-        .map((e, i, arr) => {
-            return arr[i] = e.replace(/\(|\)/g, '');
-        });
+        return this.templateUnits
+            .filter(e => {
+                return !/\?[:<=!]?/.test(e);
+            })
+            .map((e, i, arr) => {
+                return arr[i] = e.replace(/\(|\)/g, '');
+            });
     }
 }
+
+export { TemplateGroupHandler }

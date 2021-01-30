@@ -1,18 +1,28 @@
-interface PatternData {
-    [key: string]: string[] | string
+interface OneOrMultiMap<T> {
+    [key: string]: T[] | T
 }
 
+type OneOrMultiple<T> = T[] | T
+
+interface PatternData extends OneOrMultiMap<string> {}
+
 interface PatternSettingsBase {
-    template: string[] | string
+    template: OneOrMultiple<string>
     flags?: string
+}
+
+interface Symbol {
+    symbol?: TemplateVarSymbols
 }
 
 interface CustomSetting {
     [key: string]: any
 }
 
-interface PatternSettings extends PatternSettingsBase, CustomSetting {
+interface PatternSettings extends PatternSettingsBase, Symbol, CustomSetting {
     separator?: string
 }
 
-export type { PatternData, PatternSettings }
+type TemplateVarSymbols = '%' | '#' | '!' | '@';
+
+export type { OneOrMultiple, OneOrMultiMap, TemplateVarSymbols, PatternData, PatternSettings }

@@ -1,42 +1,53 @@
 import { PatternData, PatternSettings } from '../pattern-data/interfaces.ts';
+import { toList } from "../utils/toList.ts";
 
 interface TemplateSpecification {
-    buildTemplate(template: string) : string;
+    buildTemplate(template: string): string;
+}
+
+interface UsesPlaceholders {
+    placeholders: PatternData;
+}
+
+interface SpecificationData extends UsesPlaceholders {
+    settings: PatternSettings;
+    data: PatternData;
 }
 
 abstract class SpecificationBase {
-    constructor(protected data: PatternData, protected settings: PatternSettings) { }
+    constructor(protected data: SpecificationData) {}
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    private placeholders: PatternData;
-
-    constructor(data: PatternData, settings: PatternSettings, placeholders?: PatternData) {
-        super(data, settings);
-        this.placeholders = placeholders || {};
+    constructor(protected data: SpecificationData) {
+        super(data);
     }
 
-    buildTemplate(template: string) : string {
-        for (const name in this.data) {
-            const group = this.subPlaceholder(this.buildGroup(this.data[name]));
-            template = template.replace(new RegExp(`${name}(?=\\W|$)`, 'g'), group);
+    buildTemplate(template: string): string {
+        const var_symbol = (this.data.settings.symbol) ?? '';
+        for (let var_name in this.data.data) {
+            template = template.replace(
+                new RegExp(`${var_symbol}${var_name}(?=\\W|$)`, 'g'),
+                this.subPlaceholder(this.buildGroup(this.data.data[var_name]))
+            );
         }
         return template;
     }
 
-    protected buildGroup(group: string[] | string) : string {
-        return (Array.isArray(group)) ? group.join(this.settings.separator || '|') : group;
+    protected buildGroup(group: string[] | string): string {
+        return toList(group).join(this.data.settings.separator || '|');
     }
 
-    protected subPlaceholder(group: string) : string {
-        return group.replace(/\{\{(\w+)\}\}/, (match: string, p1: string) => {
-            if (!this.placeholders[p1]) {
-                throw new Error(`undefined placeholder ${match} in regex data`);
+    protected subPlaceholder(group: string): string {
+        return group.replace(/(?<!\\)\{\{(\w+)\}\}/g, (match: string, name: string) => {
+            if (!this.data.placeholders[name]) {
+                console.log(`(regexbuilder) Warning: undefined placeholder ${name} in regex data`);
+                return match;
             }
-            return this.buildGroup(this.placeholders[p1]);
+            return this.buildGroup(this.data.placeholders[name]);
         });
     }
 }
 
-export type { TemplateSpecification }
+export type { TemplateSpecification, SpecificationData }
 export { DefaultSpecification }
