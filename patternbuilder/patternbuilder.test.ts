@@ -15,7 +15,7 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
     .filter(['baz'])
     .build()
 
-    assertArrayIncludes(pattern, [new ExtendedRegExp(/baz|(bar)/, 'exclude|(foo)')]);
+    assertArrayIncludes(pattern, [new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)')]);
 });
 
 Deno.test("PatternBuilder - adds wildcard group correctly", () => {
