@@ -1,37 +1,50 @@
 import { applyMixins } from '../utils/mixin.ts';
+import { stringOrRegExp } from "../utils/stringOrRegExp.ts";
 
 type groupCode = 'cg' | 'ncg' | 'la' | 'nla' | 'lb' | 'nlb';
 
+const types = {
+    cg: '(',
+    ncg: '(?:',
+    la: '(?=',
+    lb: '(?<=',
+    nla: '(?!',
+    nlb: '(?<!'
+};
+
 function processGroupCode(type: groupCode): string {
     if (type === 'cg') {
-        return '(';
+        return types.cg;
     } else if (type === 'ncg') {
-        return '(?:';
+        return types.ncg;
     } else if (type === 'la') {
-        return '(?=';
+        return types.la;
     } else if (type === 'lb') {
-        return '(?<=';
+        return types.lb;
     } else if (type === 'nla') {
-        return '(?!';
+        return types.nla;
     } else if (type === 'nlb') {
-        return '(?<!';
+        return types.nlb;
     } else {
-        throw new Error(`Invalid group code: ${type}`)
+        throw new Error(`Invalid group code: ${type}`);
     }
-}
-
-function stringOrRegExp(arg: string | RegExp) {
-    return (typeof arg === 'string') ?  arg : arg.source;
 }
 
 class Regex {
     public parts: Array<string> = [];
     public flags: string = '';
 
+    /**
+     * Starts construction of a regular expression through a fluent builder API 
+     * by providing chainable methods. 
+     */
     static new(): RegexBuilder {
         return new RegexBuilder();
     }
-
+    /**
+     * Joins the list of pattern components together and compiles the resulting 
+     * string to a RegExp with any flags that were provided.
+     */
     compile(): RegExp {
         return new RegExp(this.parts.join(''), this.flags);
     }
@@ -54,6 +67,10 @@ abstract class RegexBuilderBase {
 }
 
 class FlagsBuilder extends RegexBuilderBase {
+    /**
+     * Adds regex flags to the pattern, for example 'g', 'i', 'gi' or 'm'.
+     * @param flags 
+     */
     flags(flags: string): this {
         this.pattern.flags = flags;
         return this;
@@ -63,7 +80,7 @@ class FlagsBuilder extends RegexBuilderBase {
 class PatternPartBuilder extends RegexBuilderBase {
     /**
      * Adds a part to the end of a regular expression. 
-     * Can be chained with other methods.
+     * 
      * @param part 
      */
     add(part: string | RegExp): this {
@@ -75,27 +92,25 @@ class PatternPartBuilder extends RegexBuilderBase {
 class PatternGroupBuilder extends RegexBuilderBase {
     /**
      * Adds a capturing group with content to the end of a regular expression. 
-     * Can be chained with other methods.
+     * 
      * @param cg 
      */
     capture(cg: string | RegExp): this {
-        this.pattern.parts.push('(', stringOrRegExp(cg), ')');
+        this.pattern.parts.push(types.cg, stringOrRegExp(cg), ')');
         return this;
     }
-
     /**
      * Adds a non-capturing group with content to the end of a regular expression. 
-     * Can be chained with other methods.
+     * 
      * @param ncg 
      */
     noncapture(ncg: string | RegExp): this {
-        this.pattern.parts.push('(?:', stringOrRegExp(ncg), ')');
+        this.pattern.parts.push(types.ncg, stringOrRegExp(ncg), ')');
         return this;
     }
-
     /**
      * Adds a group with content to the end of a regular expression. 
-     * Can be chained with other methods.
+     * 
      * @param type
      * @param content 
      */
@@ -104,10 +119,9 @@ class PatternGroupBuilder extends RegexBuilderBase {
         this.pattern.parts.push(grouptype, stringOrRegExp(content), ')');
         return this;
     }
-
     /**
      * Adds a named capturing group with content to the end of a regular expression.
-     * Can be chained with other methods.
+     * 
      * @param name
      * @param group 
      */
@@ -118,16 +132,20 @@ class PatternGroupBuilder extends RegexBuilderBase {
 }
 
 class PatternAssertionBuilder extends RegexBuilderBase {
+    /**
+     * Adds a caret character, or start-of-the-line assertion, to the pattern.
+     */
     lineStart(): this {
         this.pattern.parts.push('^');
         return this;
     }
-
+    /**
+     * Adds a dollar character, or end-of-the-line assertion, to the pattern.
+     */
     lineEnd(): this {
         this.pattern.parts.push('$');
         return this;
     }
-    
     /**
      * Combines RegexBuilder methods lineStart() and add(...).
      * @param start 
@@ -136,7 +154,6 @@ class PatternAssertionBuilder extends RegexBuilderBase {
         this.pattern.parts.push('^', stringOrRegExp(start));
         return this;
     }
-
     /**
      * Combines RegexBuilder methods add(...) and lineEnd().
      * @param start 
@@ -145,73 +162,119 @@ class PatternAssertionBuilder extends RegexBuilderBase {
         this.pattern.parts.push(end, '$');
         return this;
     }
-
+    /**
+     * Adds a lookahead assertion with the contents of argument `la` to the pattern.
+     * @param la - The contents `x` of a lookahead expression `(?=x)`
+     */
     lookahead(la: string | RegExp): this {
-        this.pattern.parts.push('(?=', stringOrRegExp(la), ')');
+        this.pattern.parts.push(types.la, stringOrRegExp(la), ')');
         return this;
     }
-
+    /**
+     * Adds a lookbehind assertion with the contents of argument `lb` to the pattern.
+     * @param lb  -  The contents `x` of a lookbehind expression `(?<=x)`
+     */
     lookbehind(lb: string | RegExp): this {
-        this.pattern.parts.push('(?<=', stringOrRegExp(lb), ')');
+        this.pattern.parts.push(types.lb, stringOrRegExp(lb), ')');
         return this;
     }
-
+    /**
+     * Adds a negated lookahead assertion with the contents of argument `nla` to the pattern.
+     * @param nla  - The contents `x` of a lookahead expression `(?!x)`
+     */
     negatedLA(nla: string | RegExp): this {
-        this.pattern.parts.push('(?!', stringOrRegExp(nla), ')');
+        this.pattern.parts.push(types.nla, stringOrRegExp(nla), ')');
         return this;
     }
-
+    /**
+     * Adds a negated lookbehind assertion with the contents of argument `nlb` to the pattern.
+     * @param nlb  -  The contents `x` of a negated lookbehind expression `(?<!x)`
+     */
     negatedLB(nlb: string | RegExp): this {
-        this.pattern.parts.push('(?<!', stringOrRegExp(nlb), ')');
+        this.pattern.parts.push(types.nlb, stringOrRegExp(nlb), ')');
         return this;
     }
-
+    /**
+     * Alias for `lookahead()`.
+     * @param la - The contents `x` of a lookahead expression `(?=x)`
+     */
     followedBy(la: string | RegExp): this {
         return this.lookahead(la);
     }
-
-    notFollowedBy(la: string | RegExp): this {
-        return this.negatedLA(la);
+    /**
+     * Alias for `negatedLA()`.
+     * @param nla  - The contents `x` of a lookahead expression `(?!x)`
+     */
+    notFollowedBy(nla: string | RegExp): this {
+        return this.negatedLA(nla);
     }
-
+    /**
+     * Alias for `lookbehind()`.
+     * @param lb  -  The contents `x` of a lookbehind expression `(?<=x)`
+     */
     precededBy(lb: string | RegExp): this {
         return this.lookbehind(lb);
     }
-
-    notPrecededBy(lb: string | RegExp): this {
-        return this.negatedLB(lb);
+    /**
+     * Alias for `negatedLB()`.
+     * @param nlb  -  The contents `x` of a negated lookbehind expression `(?<!x)`
+     */
+    notPrecededBy(nlb: string | RegExp): this {
+        return this.negatedLB(nlb);
     }
 }
 
 class PatternAlternationBuilder extends RegexBuilderBase {
     /**
-     * Adds a list of alternation values to the end of a regular expression. 
-     * Can be chained with other builder methods.
-     * @param alts 
+     * Joins a list of strings as alternates to the end of a regular expression. 
+     * @param alts - A list of strings or regex literals
      */
-    alts(alts: string[] | RegExp[], separator: string | RegExp = '|'): this {
+    alts(alts: string[] | RegExp[]): this {
         alts.forEach((item: string | RegExp, index: number, arr: string[] | RegExp[]) => {
             if (item instanceof RegExp) {
                 arr[index] = item.source;
             }
         });
-        this.pattern.parts.push(alts.join(stringOrRegExp(separator)));
+        this.pattern.parts.push(alts.join('|'));
+        return this;
+    }
+    /**
+     * Joins a list of strings to regex alternates wrapped in a certain regex group type and adds it 
+     * to the pattern.
+     * @param alts - The list of strings to join
+     * @param code - The type of group to wrap the values in: `"cg" | "ncg" | "la" | "lb" | "nla" | "nlb"`
+     */
+    altGroup(alts: string[], code: groupCode): this {
+        let grouptype = processGroupCode(code);
+        this.pattern.parts.push(grouptype, alts.join('|'), ')')
         return this;
     }
 
-    altGroup(alts: string[], code: groupCode, separator: string = '|'): this {
+    joinGroup(vals: string[], code: groupCode, separator: string): this {
         let grouptype = processGroupCode(code);
-        this.pattern.parts.push(grouptype, alts.join(separator), ')')
+        this.pattern.parts.push(grouptype, vals.join(separator), ')');
+        return this;
+    }
+
+    joinWith(vals: string[], separator: string): this {
+        this.pattern.parts.push(vals.join(separator));
         return this;
     }
 }
 
 class RegexClassBuilder extends RegexBuilderBase {
+    /**
+     * Adds a character class to the pattern with the string content provided.
+     * @param content 
+     */
     class(content: string | RegExp): this {
        this.pattern.parts.push('[', stringOrRegExp(content), ']'); 
        return this;
     }
-
+    /**
+     * Adds a negated character class to the pattern with the string content provided.
+     * @param content 
+     */
     negatedClass(content: string | RegExp): this {
         this.pattern.parts.push('[^', stringOrRegExp(content), ']'); 
         return this;
@@ -228,7 +291,6 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
         this.pattern.parts.push(`{${n}}`);
         return this;
     } 
-
     /**
      * Adds an N to M range quantifier {n,m}.
      * @param n 
@@ -239,7 +301,6 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
         this.pattern.parts.push(`{${n},${m}}`);
         return this;
     }
-
     /**
      * Adds an N or more quantifier {n,}.
      * @param n 
@@ -249,13 +310,19 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
         this.pattern.parts.push(`{${n},}`);
         return this;
     }
-
+     /**
+     * Adds a one or more quantifier `+`.
+     * @param n 
+     */
     onePlus(): this {
         this.checkDouble();
         this.pattern.parts.push(`+`);
         return this;
     }
-
+    /**
+     * Adds a zero or more quantifier `*`.
+     * @param n 
+     */
     zeroPlus(): this {
         this.checkDouble();
         this.pattern.parts.push(`*`);
@@ -272,6 +339,10 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
 }
 
 class RegexBackReferenceBuilder extends RegexBuilderBase {
+    /**
+     * Adds a backreference to a capturing group to the pattern.
+     * @param n - The number of the capturing group to be referenced
+     */
     ref(n: number): this {
         this.pattern.parts.push(`\\${n}`);
         return this;
@@ -279,16 +350,17 @@ class RegexBackReferenceBuilder extends RegexBuilderBase {
 }
 
 class NestedGroupBuilder extends RegexBuilderBase {
-    changeNestState(num: number, chars: string) {
-        this.nests += num;
-        this.pattern.parts.push(chars);
-    }
-
+    /**
+     * Starts addition of a nested tier to the pattern.
+     */
     nest(): this {
         this.changeNestState(1, '(');
         return this;
     }
-
+    /**
+     * Finishes a nested tier in the pattern. An integer can be passed to complete multiple tiers at once.
+     * @param n 
+     */
     unnest(n?: number | undefined): this {
         if (!n || n == 0) {
             this.changeNestState(-1, ')');
@@ -308,33 +380,38 @@ class NestedGroupBuilder extends RegexBuilderBase {
     }
 
     nestNonCapture(): this {
-        this.changeNestState(1, '(?:');
+        this.changeNestState(1, types.ncg);
         return this;
     }
 
     nestLookahead(): this {
-        this.changeNestState(1, '(?=');
+        this.changeNestState(1, types.la);
         return this;
     }
 
     nestLookbehind(): this {
-        this.changeNestState(1, '(?<=');
+        this.changeNestState(1, types.lb);
         return this;
     }
 
     nestNegatedLA(): this {
-        this.changeNestState(1, '(?!');
+        this.changeNestState(1, types.nla);
         return this;
     }
 
     nestNegatedLB(): this {
-        this.changeNestState(1, '(?<!');
+        this.changeNestState(1, types.nlb);
         return this;
     }
 
     nestNamed(name: string, content: string | RegExp): this {
         this.changeNestState(1, `(?<${name}>${stringOrRegExp(content)}`);
         return this;
+    }
+
+    private changeNestState(num: number, chars: string) {
+        this.nests += num;
+        this.pattern.parts.push(chars);
     }
 }
 

@@ -12,7 +12,7 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
     let pattern = Pattern.new()
     .settings({template: 'foo'})
     .data({foo: 'bar'})
-    .except(['baz'])
+    .filter(['baz'])
     .build()
 
     assertArrayIncludes(pattern, [new ExtendedRegExp(/baz|(bar)/, 'exclude|(foo)')]);

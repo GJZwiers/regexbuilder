@@ -111,33 +111,33 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
 ### Alternation
 ```typescript
-    .alts(['foo','bar','baz');
+    .alts(['foo','bar','baz']);
     >> /foo|bar|baz/
-
-    .alts(['foo','bar','baz', '.');
-    >> /foo.bar.baz/
 
     .altGroup(['foo', 'bar', 'baz'], 'ncg')
     >> /(?:foo|bar|baz)/
+
+    .joinGroup(['foo','bar','baz'], 'la', '.');
+    >> /(?=foo.bar.baz)/
 ```
 
 ### Quantifiers
 ```typescript
     .add('foo')
     .times(2)
-    >> /foo{2}/ // matches fooo
+    >> /foo{2}/ // matches fo with 2 more o's
 
     .between(2, 5)
-    >> /foo{2,5}/   // matches foo with 2 to 5 more o's
+    >> /foo{2,5}/   // matches fo with 2 to 5 more o's
 
     .atleast(2)
-    >> /foo{2,}/    // matches foo with 2 to any more o's
+    >> /foo{2,}/    // matches fo with 2 or more o's
 
     .zeroPlus()
-    >> /foo*/   // matches fo with 0 to any more o's
+    >> /foo*/   // matches fo with 0 or more o's
 
     .onePlus()
-    >> /foo+/   // matches fo with 1 to any more o's
+    >> /foo+/   // matches fo with 1 or more o's
 ```
 
 ### Backreferences
@@ -177,47 +177,59 @@ let pattern = Pattern.new()
     .placeholders({ foo: ['bar'] })
     .build();
 
-    >> /(hello|good morning|howdy) (?=world|new york|bar)/
+    >> /(hello|good morning|howdy) (?=world|new york|bar)/i
 ```
 
 ### Templates
-give a name to any arbitrary part of a pattern, whether they are inside a capture group or not. Any word in the template will be substituted with the values of the corresponding key in the data. Any array in the data will be joined with pipe `|` symbols to create alternates.
+Give a name to any arbitrary part of a pattern, whether they are inside a capture group or not. Any word in the template will be substituted with the values of the corresponding key in the data. Any array in the data will be joined with pipe `|` symbols to create alternates.
 ```typescript
-.settings({
-    template: 'field_names[: ]+(field_values)'
-})
-.data({
-    field_names: ['Product Volume', 'volume']
-    field_values: ['100ml', '5L', String.raw`\d{1,4}[cml]`]
-})
+    .settings({
+        template: 'field_names[: ]+(field_values)'
+    })
+    .data({
+        field_names: ['Product Volume', 'volume']
+        field_values: ['100ml', '5L', String.raw`\d{1,4}[cml]`]
+    })
 ```
+Multiple templates are supported as well:
+```typescript
+    .settings({
+        template: [
+            'day-month-year',
+            'month-day-year'
+        ]
+    })
+    .data({
+        day: '[0-3][0-9]',
+        month: ['jan', 'feb', 'mar', ..., 'dec'],
+        year: String.raw`(?:19|20)\d{2}\b`
+    })
+```
+
 
 ### Placeholders
 Declare a set of placeholder substitutes to reuse them in multiple patterns. Add placeholders to the data with double curly braces: `{{placeholder}}`
 ```typescript
 const ph = {
-    foo: ['bar', 'baz'],    // changes {{foo}} in any key in the data to bar|baz
+    foo: ['bar', 'baz'],    // changes '{{foo}}' in any key in the data to 'bar|baz'
 };
 
 Pattern.new()
-    // .. settings, data
     .placeholders(ph)
 ```
 
-### Exceptions
-Exclude values you know you don't want in your match results. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding exclusions to group 0.
+### Filter Exceptions
+Separate desired and unwanted values with the `filter` method. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding unwanted values to group 0 only.
 ```typescript
-Pattern.new()
     .settings({ template: 'years'})
     .data({ years: String.raw`20\d{2}` })
-    .except("2000")
+    .filter("2000")
 ```
-The pattern above will build to `/2000|(20\d{2})/`.
+The pattern above will build to `/2000|(20\d{2})/`. If it matches `2000` the result will not have an index 1, but it will if if matches anything else like `2001`.
 
 ### Wildcard Pattern
 Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.
 ```typescript
-Pattern.new()
     .settings({ template: 'years'})
     .data({ years: ['2018', '2019', '2020'] })
     .wildcard(String.raw`20\d{2}\b`)
@@ -227,11 +239,11 @@ The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wild
 ### Match Maps
 Match results can be mapped to their pattern's template with the `matchMap` method:
 ```typescript
-.settings({ template: '(greeting) (region)' })
-.data({ greeting: 'hello', region: 'world' })
-.build()
+    .settings({ template: '(greeting) (region)' })
+    .data({ greeting: 'hello', region: 'world' })
+    .build()
 
->> /(hello) (world)/
+    >> /(hello) (world)/
 
 pattern.matchMap('hello world')
 
