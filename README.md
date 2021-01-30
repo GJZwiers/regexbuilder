@@ -249,3 +249,11 @@ pattern.matchMap('hello world')
 
 >> { full_match: 'hello world', greeting: 'hello', region: 'world' }
 ```
+
+## Customization
+
+### Custom variable symbol
+If you'd like to use a more explicit notation for the template variables, you can choose from a few symbols by adding a `symbol` setting when building a `Pattern`:
+```typescript
+    .settings({ template: '#foo (?=#bar)', symbol: '#'})   // '#' | '%' | '@' | '!'
+```
