@@ -23,7 +23,7 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
 
 - [Customizing PatternBuilder](#customizing-patternbuilder)
 
-   * [Custom Template-Building Specification (Experimental)](#custom-specification-to-build-templates-(experimental))
+   * [Custom Template-Building Specification (Experimental)](#custom-template-building-specification-(experimental))
 
 ---
 
@@ -145,6 +145,9 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     .onePlus()
     >> /foo+/   // matches fo with 1 or more o's
+
+    .oneZero()
+    >> /foo?/   // matches fo with 0 or 1 o
 ```
 
 ### Backreferences
@@ -304,7 +307,7 @@ let pattern = Pattern.new()
 
 console.log(pattern.match('bar'));
 
->> { full_match: "bar", foo: "bar" }
+>> { full_match: 'bar', foo: 'bar' }
 ```
 
 ### Exceptions
@@ -312,7 +315,7 @@ Separate desired and unwanted values with the `filter` method. Note that this wi
 ```typescript
 .settings({ template: 'years'})
 .vars({ years: String.raw`20\d{2}` })
-.filter("2000")
+.filter('2000')
 
 >> /2000|(20\d{2})/
 ```
