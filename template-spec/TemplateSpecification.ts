@@ -2,7 +2,7 @@ import { PatternData, PatternSettings } from '../pattern-data/interfaces.ts';
 import { toList } from "../utils/toList.ts";
 
 interface TemplateSpecification {
-    buildTemplate(template: string): string;
+    compose(template: string): string;
 }
 
 interface UsesPlaceholders {
@@ -11,41 +11,79 @@ interface UsesPlaceholders {
 
 interface SpecificationData extends UsesPlaceholders {
     settings: PatternSettings;
-    data: PatternData;
+    vars: PatternData;
 }
 
 abstract class SpecificationBase {
-    constructor(protected data: SpecificationData) {}
+    constructor(protected readonly data: SpecificationData) { }
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    constructor(protected data: SpecificationData) {
+    private var_symbol = (this.data.settings.symbol) ?? '';
+
+    constructor(protected readonly data: SpecificationData) {
         super(data);
     }
 
-    buildTemplate(template: string): string {
-        const var_symbol = (this.data.settings.symbol) ?? '';
-        for (let var_name in this.data.data) {
-            template = template.replace(
-                new RegExp(`${var_symbol}${var_name}(?=\\W|$)`, 'g'),
-                this.subPlaceholder(this.buildGroup(this.data.data[var_name]))
-            );
-        }
-        return template;
+    compose(template: string): string {
+        const keys = Object.keys(this.data.vars).join('|');
+        const parts = template.split(new RegExp(`([\\\\]?${this.var_symbol}(?:${keys}))`));
+        return this.buildLogic(parts);
     }
 
-    protected buildGroup(group: string[] | string): string {
-        return toList(group).join(this.data.settings.separator || '|');
+    protected buildLogic(templateParts: string[]): string {       
+        const escape = /^\\/;
+        return templateParts.map(t => {
+            if (escape.test(t)) return t.replace(escape, '');
+            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
+            const values = this.data.vars[key];
+            if (!values) return t;
+            
+            return this.subPlaceholder(this.buildVar(values));
+        }).join('');
     }
 
-    protected subPlaceholder(group: string): string {
+    protected buildVar(val: string[] | string): string {
+        return toList(val).join(this.data.settings.separator || '|');
+    }
+
+    protected subPlaceholder(group: string): string { 
         return group.replace(/(?<!\\)\{\{(\w+)\}\}/g, (match: string, name: string) => {
             if (!this.data.placeholders[name]) {
-                console.log(`(regexbuilder) Warning: undefined placeholder ${name} in regex data`);
+                console.warn(`(regexbuilder) Warning: undefined placeholder ${name} in regex data`);
                 return match;
             }
-            return this.buildGroup(this.data.placeholders[name]);
+            return this.buildVar(this.data.placeholders[name]);
         });
+    }
+}
+
+export class SimpleSpecification extends SpecificationBase implements TemplateSpecification {
+    private var_symbol = (this.data.settings.symbol) ?? '';
+
+    constructor(protected readonly data: SpecificationData) {
+        super(data);
+    }
+
+    compose(template: string): string {
+        const keys = Object.keys(this.data.vars).join('|');
+        const parts = template.split(new RegExp(`([\\\\]?${this.var_symbol}(?:${keys}))`));
+        return this.buildLogic(parts);
+    }
+
+    protected buildLogic(templateParts: string[]): string {       
+        const escape = /^\\/;
+        return templateParts.map(t => {
+            if (escape.test(t)) return t.replace(escape, '');
+            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
+            const values = this.data.vars[key];
+            if (!values) return t;
+            return this.buildVar(values);
+        }).join('');
+    }
+
+    protected buildVar(val: string[] | string): string {
+        return toList(val).join(this.data.settings.separator || '|');
     }
 }
 

@@ -3,15 +3,16 @@ import { SpecificationData, TemplateSpecification } from '../template-spec/Templ
 import { toList } from '../utils/toList.ts';
 
 class PatternCrafter {
-    constructor(private spec: TemplateSpecification, private data: SpecificationData) {}
+    constructor(private readonly spec: TemplateSpecification, private readonly data: SpecificationData) {}
 
     craft(): ExtendedRegExp[] {
         return toList(this.data.settings.template)
         .map(template => { return new ExtendedRegExp(
             new RegExp(
-                this.spec.buildTemplate(template), 
+                this.spec.compose(template), 
                 this.data.settings.flags ?? ''),
-            template);
+            template,
+            this.data.settings.map || false);
         });
     }
 }

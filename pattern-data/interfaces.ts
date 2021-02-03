@@ -15,11 +15,15 @@ interface Symbol {
     symbol?: TemplateVarSymbols
 }
 
+interface Maps {
+    map?: boolean
+}
+
 interface CustomSetting {
     [key: string]: any
 }
 
-interface PatternSettings extends PatternSettingsBase, Symbol, CustomSetting {
+interface PatternSettings extends PatternSettingsBase, Symbol, Maps, CustomSetting {
     separator?: string
 }
 
