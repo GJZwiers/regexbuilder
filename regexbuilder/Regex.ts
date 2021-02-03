@@ -31,7 +31,7 @@ function processGroupCode(type: groupCode): string {
 }
 
 class Regex {
-    public parts: Array<string> = [];
+    public readonly parts: Array<string> = [];
     public flags: string = '';
 
     /**
@@ -60,7 +60,7 @@ abstract class RegexBuilderBase {
      */
     build(): RegExp {
         if (this.nests > 0) {
-            throw new Error("Unfinished nest in pattern.");
+            throw new Error("(regexbuilder) Error: Found unfinished nested structure in pattern." + this.pattern.parts);
         }
         return this.pattern.compile();
     }
@@ -312,29 +312,58 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
     }
      /**
      * Adds a one or more quantifier `+`.
-     * @param n 
      */
     onePlus(): this {
         this.checkDouble();
-        this.pattern.parts.push(`+`);
+        this.pattern.parts.push('+');
         return this;
     }
     /**
      * Adds a zero or more quantifier `*`.
-     * @param n 
      */
     zeroPlus(): this {
         this.checkDouble();
-        this.pattern.parts.push(`*`);
+        this.pattern.parts.push('*');
+        return this;
+    }
+    /**
+     * Adds a zero or one quantifier `?`.
+     */
+    oneZero(): this {
+        this.checkDouble();
+        this.pattern.parts.push('?');
+        return this;
+    }
+    /**
+     * Makes the previous quantifier lazy, meaning it will stop on the first match it finds in a string.
+     * 
+     * Example: In the string `'barbarbar'` the pattern `(bar)+` will match `'barbarbar'` but` (bar)+? `will match `'bar'`
+     */
+    lazy(): this {
+        this.checkModifier();
+        this.pattern.parts.push('?');
         return this;
     }
 
-    private checkDouble() {
-        let lastElement = this.pattern.parts.length - 1;
-        if (/\{\d\}|\{\d,\s?\d\}$/.test(this.pattern.parts[lastElement])) {
-            console.log("Warning: A duplicate quantifier may have been added " +
-            "to the pattern. Check that you are not chaining quantifier methods.");
+    private checkModifier() {
+        const previousToken = this.getPreviousToken();
+        if (!/\{\d ?, ?\d\}|\{\d\}|\*|\+/.test(this.pattern.parts[this.pattern.parts.length - 1])) {
+            console.warn(`(regexbuilder) Warning: lazy modifier "?" was placed after "${previousToken}" which is not a quantifier. ` +
+            'This will behave as a "one or zero" quantifier instead of a lazy modifier. ' +
+            'If this is what you intend consider using the "oneZero()" method instead.');
         }
+    }
+
+    private checkDouble() {
+        const previousToken = this.getPreviousToken();
+        if (/\{\d\}|\{\d,\s?\d\}$/.test(previousToken)) {
+            console.warn('(regexbuilder) Warning: A duplicate quantifier may have been added ' +
+            'to the pattern. Make sure that you are not chaining quantifier methods.');
+        }
+    }
+
+    private getPreviousToken() {
+        return this.pattern.parts[this.pattern.parts.length - 1]
     }
 }
 
@@ -358,17 +387,20 @@ class NestedGroupBuilder extends RegexBuilderBase {
         return this;
     }
     /**
-     * Finishes a nested tier in the pattern. An integer can be passed to complete multiple tiers at once.
+     * Finishes a nested tier in the pattern. An integer can be passed to complete multiple tiers at once, 
+     * or an asterisk to finish all remaining nests.
      * @param n 
      */
-    unnest(n?: number | undefined): this {
-        if (!n || n == 0) {
+    unnest(n?: undefined | number | '*'): this {
+        if (!n || n === 0) {
             this.changeNestState(-1, ')');
             return this;
         }
-        for (let i = 0; i < n; i++) {
-            this.changeNestState(-1, ')');
+        if (n === '*') {
+            this.changeNestState(-this.nests, ')');
+            return this;
         }
+        this.changeNestState(-n, ')');
         return this;
     }
 
@@ -409,9 +441,11 @@ class NestedGroupBuilder extends RegexBuilderBase {
         return this;
     }
 
-    private changeNestState(num: number, chars: string) {
+    private changeNestState(num: number, char: string) {
+        for (let i = 0; i < Math.abs(num); i++) {
+            this.pattern.parts.push(char);
+        }
         this.nests += num;
-        this.pattern.parts.push(chars);
     }
 }
 

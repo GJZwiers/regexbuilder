@@ -1,22 +1,29 @@
 ![build](https://github.com/GJZwiers/regexbuilder-deno/workflows/Build/badge.svg)
 
-This module provides two fluent builder APIs to make regex patterns. One is used for piecewise building of a RegExp, while the other is used to create extended regexes from user-defined string templates.
+This module provides two fluent builder interfaces to make regex patterns. RegexBuilder is used for piecewise building of a RegExp, while PatternBuilder is used to create extended regexes from string templates defined by the user.
 
 # Table of Contents
 - [RegexBuilder](#regexbuilder)  
    * [Groups](#groups)  
    * [Nesting](#nesting)  
    * [Assertions](#assertions)  
-   * [Alternation](#alternation)  
+   * [Alternates](#alternation)  
    * [Quantifiers](#quantifiers)  
    * [Backreferences](#backreferences)  
    * [Flags](#flags)  
 - [PatternBuilder](#patternbuilder)  
    * [Templates](#templates)  
    * [Placeholders](#placeholders)  
-   * [Exceptions](#exceptions)  
-   * [Wildcard Pattern](#wildcard-pattern)  
    * [Match Maps](#match-maps)
+   * [Automatic Mapping](#automatic-mapping)
+   * [Exceptions](#exceptions)  
+   * [Wildcard Pattern](#wildcard-pattern)
+   * [Custom Variable Symbol](#custom-variable-symbol)
+   * [Custom Separator Symbol](#custom-separator) 
+
+- [Customizing PatternBuilder](#customizing-patternbuilder)
+
+   * [Custom Template-Building Specification (Experimental)](#custom-specification-to-build-templates-(experimental))
 
 ---
 
@@ -170,28 +177,32 @@ let pattern = Pattern.new()
         template: '(greetings) (?=regions)',
         flags: 'i'
     })
-    .data({
-        greetings: ['hello', 'good morning', 'howdy'],
-        regions: ['world', 'new york', '{{foo}}']
+    .vars({
+        greetings: ['hello','good morning','howdy'],
+        regions: ['world','new york','{{foo}}']
     })
-    .placeholders({ foo: ['bar'] })
+    .placeholders({ foo: 'bar' })
     .build();
 
     >> /(hello|good morning|howdy) (?=world|new york|bar)/i
 ```
 
 ### Templates
-Give a name to any arbitrary part of a pattern, whether they are inside a capture group or not. Any word in the template will be substituted with the values of the corresponding key in the data. Any array in the data will be joined with pipe `|` symbols to create alternates.
+Templates are useful to separate concerns between a pattern's structure and values. You can name any part. 
+
+Any word in the template will be substituted with the values of the corresponding key in the data. Arrays in the data will be joined to a sequence of alternates (or a custom sequence if you define a custom separator):
 ```typescript
     .settings({
-        template: 'field_names[: ]+(field_values)'
+        template: '(?:expiration_statement)[: ]+(day-month-year)'
     })
-    .data({
-        field_names: ['Product Volume', 'volume']
-        field_values: ['100ml', '5L', String.raw`\d{1,4}[cml]`]
+    .vars({
+        expiration_statement: ['best-by','use-by','consume before','expiration date','expiry date'],
+        day: '[0-3][0-9]',
+        month: ['jan', 'feb', 'mar', ..., 'dec'],
+        year: String.raw`(?:19|20)\d{2}\b`  // Note that you will need double backslashes with a normal string 
     })
 ```
-Multiple templates are supported as well:
+If the data you wish to match will have various different shapes it's also possible to define multiple templates and use `buildAll()` in place of `build()`. This will return an array of patterns. For example, if you are matching both American and European date formats:
 ```typescript
     .settings({
         template: [
@@ -199,48 +210,81 @@ Multiple templates are supported as well:
             'month-day-year'
         ]
     })
-    .data({
+    .vars({
         day: '[0-3][0-9]',
         month: ['jan', 'feb', 'mar', ..., 'dec'],
         year: String.raw`(?:19|20)\d{2}\b`
     })
+    .buildAll();
 ```
 
+Picking a [template variable symbol](#custom-variable-symbol) is possible if you want to be more clear on which parts of a template are variables and which are not.
+
+When you don't need to use any settings and only want to define a template, you can also use `template` as a more concise route:
+```typescript
+Pattern.new()
+    .template('(foo)(?!bar)')
+    .vars({ foo: 'bar', bar: 'baz'})
+    .build();
+```
 
 ### Placeholders
-Declare a set of placeholder substitutes to reuse them in multiple patterns. Add placeholders to the data with double curly braces: `{{placeholder}}`
-```typescript
-const ph = {
-    foo: ['bar', 'baz'],    // changes '{{foo}}' in any key in the data to 'bar|baz'
-};
+Declare a set of placeholder substitutes to reuse them in multiple patterns. Add placeholders to the data with double curly braces and a name: `{{placeholder}}`.
 
-Pattern.new()
-    .placeholders(ph)
-```
-
-### Filter Exceptions
-Separate desired and unwanted values with the `filter` method. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding unwanted values to group 0 only.
+The example below shows how to reuse some of the data from the two previous patterns by using placeholders for `day`, `month` and `year`:
 ```typescript
-    .settings({ template: 'years'})
-    .data({ years: String.raw`20\d{2}` })
-    .filter("2000")
-```
-The pattern above will build to `/2000|(20\d{2})/`. If it matches `2000` the result will not have an index 1, but it will if if matches anything else like `2001`.
+const placeholders = {
+        day: '[0-3][0-9]',
+        month: [ 
+        'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+        'jul', 'aug', 'sep', 'oct', 'nov', 'dec'
+        ],
+        year: String.raw`(?:19|20)\d{2}\b`
+    };
+    
+const expirationDate = Pattern.new()
+    .settings({
+        template: '(?:expiration_statement)[: ]+(day)-(month)-(year)'
+    })
+    .vars({
+        expiration_statement: [
+            'best-by','use-by','consume before','expiration date','expiry date'
+        ],
+        day: '{{day}}',
+        month: '{{month}}',
+        year: '{{year}}'
+    })
+    .placeholders(placeholders)
+    .build();
 
-### Wildcard Pattern
-Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.
-```typescript
-    .settings({ template: 'years'})
-    .data({ years: ['2018', '2019', '2020'] })
-    .wildcard(String.raw`20\d{2}\b`)
+    >> /(?:best-by|use-by|consume before|expiration date|expiry date)[: ]+([0-3][0-9])-(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)-((?:19|20)\d{2}\b)/
+
+const calendarDate = Pattern.new()
+    .settings({
+        template: [
+            '(day)-(month)-(year)',
+            '(month)-(day)-(year)'
+        ]
+    })
+    .placeholders(placeholders)
+    .vars({
+        day: '{{day}}',
+        month: '{{month}}',
+        year: '{{year}}'
+    })
+    .buildAll();
+
+    >> [
+        /([0-3][0-9])-(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)-((?:19|20)\d{2}\b)/,
+        /(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)-([0-3][0-9])-((?:19|20)\d{2}\b)/
+    ]
 ```
-The pattern above will build to `/2018|2019|2020|(20\d{2}\b)/`. Any matched wildcard year will be placed in group 1.
 
 ### Match Maps
-Match results can be mapped to their pattern's template with the `matchMap` method:
+Arrays of matches can be mapped to their pattern's template with the `matchMap` method:
 ```typescript
     .settings({ template: '(greeting) (region)' })
-    .data({ greeting: 'hello', region: 'world' })
+    .vars({ greeting: 'hello', region: 'world' })
     .build()
 
     >> /(hello) (world)/
@@ -250,10 +294,91 @@ pattern.matchMap('hello world')
 >> { full_match: 'hello world', greeting: 'hello', region: 'world' }
 ```
 
-## Customization
+### Automatic Mapping
+When the `map: true` setting is used a pattern will automatically map the array of matches.
+```typescript
+let pattern = Pattern.new()
+    .settings({ template: '(foo)', map: true })
+    .vars({ foo: 'bar' })
+    .build();
 
-### Custom variable symbol
+console.log(pattern.match('bar'));
+
+>> { full_match: "bar", foo: "bar" }
+```
+
+### Exceptions
+Separate desired and unwanted values with the `filter` method. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding unwanted values to group 0 only.
+```typescript
+.settings({ template: 'years'})
+.vars({ years: String.raw`20\d{2}` })
+.filter("2000")
+
+>> /2000|(20\d{2})/
+```
+When the pattern above matches `2000` the resulting array of matches will not have an index 1, but it will if anything else like `2001` or `2020` is matched.
+
+### Wildcard Pattern
+Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.
+```typescript
+.settings({ template: 'years' })
+.vars({ years: ['2018','2019','2020'] })
+.wildcard(String.raw`20\d{2}\b`)
+
+>> /2018|2019|2020|(20\d{2}\b)/
+```
+Note that with the pattern above any wildcard match will be placed in group 1.
+
+### Custom Variable Symbol
 If you'd like to use a more explicit notation for the template variables, you can choose from a few symbols by adding a `symbol` setting when building a `Pattern`:
 ```typescript
-    .settings({ template: '#foo (?=#bar)', symbol: '#'})   // '#' | '%' | '@' | '!'
+.settings({ template: '#foo', symbol: '#' })   // '#' | '%' | '@' | '!'
+.vars({ foo: 'bar'})
+
+>> /bar/
+```
+
+If you also need to use a variable name as literal characters escape it with a backslash (keep in mind to use a double backslash in a normal string or `String.raw`):
+```typescript
+.settings({ template: String.raw`\#foo (?=#foo)`, symbol: '#' })
+.vars({ foo: 'baz' })
+
+>> /#foo (?=bar)/
+```
+
+### Custom Separator Symbol
+If you'd like to join the arrays defined in `vars` with something other than `|` add the `separator` setting:
+```typescript
+.settings({ template: 'foo (?=bar)', separator: String.raw`\s+`})
+.vars({ foo: ['one', 'two', 'three']})
+.build()
+
+>> /one\s+two\s+three (?=bar)/
+```
+
+## Customizing PatternBuilder
+
+### Custom Template-Building Specification (Experimental)
+You can write your own implementation of how to build patterns from template strings. This can allow you to add extra logic or simplify PatternBuilder's default specification to only include what you need.
+
+To start with, any custom specification has to implement `TemplateSpecification`. This means it needs to have a `compose` method which takes a `string` parameter `template` and returns a `string`:
+```typescript
+interface TemplateSpecification {
+    compose(template: string): string;
+}
+```
+
+Then the builder can be constructed in a slightly more verbose way by adding the custom specification and providing it with an empty data object. After that you can start building as usual:
+```typescript
+let builder = new PatternBuilder(
+    new MyCustomSpecification({
+        settings:{template:'',flags:''},
+        vars:{},
+        placeholders:{}
+}));
+
+builder
+    .settings({template: 'foo'})
+    .vars({foo: 'bar'})
+    .build();
 ```

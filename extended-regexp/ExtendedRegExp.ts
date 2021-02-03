@@ -1,4 +1,4 @@
-import { TemplateGroupHandler } from "../template-group-handler/TemplateGroupHandler.ts";
+import { TemplateBracketHandler } from "../template-group-handler/TemplateStringHandler.ts";
 
 interface RegExpMatchMap {
     full_match: string,
@@ -7,11 +7,14 @@ interface RegExpMatchMap {
 
 /**
  * Decorated JavaScript RegExp with additional methods and properties.
- * @param pattern - a regular expression
- * @param _template - a string template describing a regular expression structure
+ * @param pattern - a regular expression.
+ * @param template - a string template describing a regular expression structure.
+ * @param automap - boolean flag that sets whether or not the pattern automatically maps arrays of matches.
  */
 export class ExtendedRegExp {
-    constructor(private pattern: RegExp, private _template: string) { }
+    constructor(private readonly pattern: RegExp,
+                private readonly template: string,
+                private readonly automap: boolean) { }
 
     get dotAll(): boolean {
         return this.pattern.dotAll;
@@ -52,69 +55,97 @@ export class ExtendedRegExp {
     get unicode(): boolean {
         return this.pattern.unicode;
     }
-
+    /**
+     * Throughput method for RegExp.exec.
+     * @param string 
+     */
     exec(string: string): RegExpMatchArray | null {
         return this.pattern.exec(string);
     }
-
+    /**
+     * Throughput method for RegExp.test.
+     * @param string 
+     */
     test(string: string): boolean {
         return this.pattern.test(string);
     }
-
-    match(string: string): RegExpMatchArray | null {
+    /**
+     * Throughput method for String.match.
+     * @param string 
+     */
+    match(string: string): RegExpMatchArray | RegExpMatchMap | null {
+        if (this.automap) {
+            return this.matchMap(string);
+        }
         return string.match(this.pattern);
     }
-
+    /**
+     * Throughput method for String.matchAll.
+     * @param string 
+     */
     matchAll(string: string): IterableIterator<RegExpMatchArray> {
         return string.matchAll(this.pattern);
     }
-
+    /**
+     * Throughput method for String.replace.
+     * @param string 
+     * @param replaceValue
+     */
     replace(string: string, replaceValue: string): string {
         return string.replace(this.pattern, replaceValue);
     }
-
+    /**
+     * Throughput method for String.search.
+     * @param string 
+     */
     search(string: string): number {
         return string.search(this.pattern);
     }
-
+    /**
+     * Throughput method for String.split.
+     * @param string 
+     * @param limit
+     */
     split(string: string, limit: number | undefined): string[] {
         return string.split(this.pattern, limit);
     }
 
-    // -----extra methods-----
+    // -----Additional methods-----
 
-    template(): string {
-        return this._template;
+    /**
+     * Returns the template string for this pattern.
+     */
+    getTemplate(): string {
+        if (Array.isArray(this.template)) {
+            return this.template.join(' --- ');
+        }
+        return this.template;
     }
-
     /**
      * @experimental
      * Performs String.match(RegExp) but maps the matches to an object with the 
      * pattern's template capturing groups as keys.
-     * @method
-     * @name matchMap
+     * 
+     * For example, when given RegExpMatchArray `['hello world', 'world']` with template `'greeting (region)'`,
+     *  the result will be `{ full_match: 'hello world', region: 'world'}`.
      * @param {string} string
-     * @returns {RegExpMatchMap} map of matches
      */
     matchMap(string: string): RegExpMatchMap | null {
         let matches = string.match(this.pattern);
         if (!matches) return null;
         return this.map(matches);
     }
-
     /**
      * @experimental
      * Maps an array of matches according to the template of the pattern.
      * Returns an object with a key for the full match and one for each capturing group in the template.
-     * 
-     * For example, when given RegExpMatchArray ['hello world' 'world'] with template 'greeting (region)', the result is
-     * { full_match: 'hello world', region: 'world'}.
+     * Used implicitly in `matchMap()`
      * @param matches - An array of regular expression matches.
      */
     map(matches: RegExpMatchArray): RegExpMatchMap {
         const map: RegExpMatchMap = { full_match: matches[0] };
-        const groupNames = new TemplateGroupHandler(this._template).handleBrackets();
-        for(let [i, name] of groupNames.entries()) {
+        const groupNames = new TemplateBracketHandler(this.template, '(').handleBrackets();
+        for (let [i, name] of groupNames.entries()) {
             map[name] = matches[i + 1];
         }
         return map;
