@@ -23,9 +23,6 @@ class PatternBuilderBase {
      * Builds the template into an extended regular expression object from the template variable data and the pattern settings.
      */
     build(): ExtendedRegExp {
-        if (Array.isArray(this.pattern.settings.template)) {
-            console.warn('(regexbuilder) Warning: build() was called with an array of string templates. Use buildAll() for this purpose. Returning the first template.')
-        }
         const specData = this.assembleData();
         const crafted = new PatternCrafter(new DefaultSpecification(specData), specData).craft();
         if (!crafted[0]) throw new Error('Something went wrong crafting the pattern');

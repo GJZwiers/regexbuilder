@@ -16,7 +16,7 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
     let pattern = Pattern.new()
         .settings({template: 'foo'})
         .vars({foo: 'bar'})
-        .filter(['baz'])
+        .filter('baz')
         .build();
 
         assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
