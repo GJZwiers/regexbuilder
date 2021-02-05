@@ -23,7 +23,6 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Custom Separator Symbol](#custom-separator) 
 
 - [Customizing PatternBuilder](#customizing-patternbuilder)
-
    * [Custom Template-Building Specification (Experimental)](#custom-template-building-specification-experimental)
 
 ---

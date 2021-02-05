@@ -377,7 +377,7 @@ class RegexBackReferenceBuilder extends RegexBuilderBase {
         if (typeof n === 'number') {
             this.pattern.parts.push(`\\${n}`);
         } else {
-            this.pattern.parts.push(`\\k${n}`)
+            this.pattern.parts.push(`\\k<${n}>`)
         }
 
         return this;
