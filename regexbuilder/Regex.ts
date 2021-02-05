@@ -370,10 +370,16 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
 class RegexBackReferenceBuilder extends RegexBuilderBase {
     /**
      * Adds a backreference to a capturing group to the pattern.
-     * @param n - The number of the capturing group to be referenced
+     * @param n - The number of the capturing group to be referenced, or 
+     * the name of the named capturing group to be referenced as a string
      */
-    ref(n: number): this {
-        this.pattern.parts.push(`\\${n}`);
+    ref(n: number | string): this {
+        if (typeof n === 'number') {
+            this.pattern.parts.push(`\\${n}`);
+        } else {
+            this.pattern.parts.push(`\\k${n}`)
+        }
+
         return this;
     }
 }

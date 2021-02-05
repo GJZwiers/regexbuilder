@@ -7,7 +7,8 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Groups](#groups)  
    * [Nesting](#nesting)  
    * [Assertions](#assertions)  
-   * [Alternates](#alternation)  
+   * [Alternates](#alternation)
+   * [Character Classes](#character-classes)  
    * [Quantifiers](#quantifiers)  
    * [Backreferences](#backreferences)  
    * [Flags](#flags)  
@@ -23,7 +24,7 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
 
 - [Customizing PatternBuilder](#customizing-patternbuilder)
 
-   * [Custom Template-Building Specification (Experimental)](#custom-template-building-specification-(experimental))
+   * [Custom Template-Building Specification (Experimental)](#custom-template-building-specification-experimental)
 
 ---
 
@@ -64,7 +65,7 @@ To add groups either use the specific method call or use the more general `group
 
 Named groups should be made with `namedGroup`:
 ```typescript
-.namedGroup('foo', 'bar');    >> /(?<foo>bar)/
+    .namedGroup('foo', 'bar');    >> /(?<foo>bar)/
 ```
 
 ### Nesting
@@ -128,6 +129,15 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /(?=foo.bar.baz)/
 ```
 
+### Character Classes
+```typescript
+    .class('abc');
+    >> /[abc]/
+
+    .negatedClass('abc');
+    >> /[^abc]/
+```
+
 ### Quantifiers
 ```typescript
     .add('foo')
@@ -148,6 +158,10 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     .oneZero()
     >> /foo?/   // matches fo with 0 or 1 o
+
+    .zeroPlus()
+    .lazy()
+    >> /foo*?/   // matches fo with 0 or more o's using the lazy modifier
 ```
 
 ### Backreferences
@@ -157,6 +171,12 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .ref(1)
 
     >> /(foo)[: ]+\1/
+
+    .namedGroup('foo', 'bar')
+    .add('[: ]+')
+    .ref('foo')
+
+    >> /(?<foo>bar)[: ]+\k<foo>/
 ```
 
 ### Flags
@@ -191,9 +211,7 @@ let pattern = Pattern.new()
 ```
 
 ### Templates
-Templates are useful to separate concerns between a pattern's structure and values. You can name any part. 
-
-Any word in the template will be substituted with the values of the corresponding key in the data. Arrays in the data will be joined to a sequence of alternates (or a custom sequence if you define a custom separator):
+Templates are useful to separate concerns between a pattern's structure and values. You can name any part of a template string. Any word in it will be substituted with the values of the corresponding key in the data. Arrays in the data will be joined to a sequence of alternates (or a custom sequence if you define a custom separator):
 ```typescript
     .settings({
         template: '(?:expiration_statement)[: ]+(day-month-year)'
@@ -202,15 +220,15 @@ Any word in the template will be substituted with the values of the correspondin
         expiration_statement: ['best-by','use-by','consume before','expiration date','expiry date'],
         day: '[0-3][0-9]',
         month: ['jan', 'feb', 'mar', ..., 'dec'],
-        year: String.raw`(?:19|20)\d{2}\b`  // Note that you will need double backslashes with a normal string 
+        year: String.raw`(?:19|20)\d{2}\b`  // Note that you will need double backslashes in a normal string 
     })
 ```
-If the data you wish to match will have various different shapes it's also possible to define multiple templates and use `buildAll()` in place of `build()`. This will return an array of patterns. For example, if you are matching both American and European date formats:
+If the data you wish to match will have different formats it's also possible to define multiple templates and use `buildAll()` in place of `build()`. This will return an array of patterns. For example, if you are matching both American and European date formats:
 ```typescript
     .settings({
         template: [
-            'day-month-year',
-            'month-day-year'
+            '(day)-(month)-(year)',
+            '(month)-(day)-(year)'
         ]
     })
     .vars({
@@ -320,6 +338,29 @@ Separate desired and unwanted values with the `filter` method. Note that this wi
 >> /2000|(20\d{2})/
 ```
 When the pattern above matches `2000` the resulting array of matches will not have an index 1, but it will if anything else like `2001` or `2020` is matched.
+
+Below is another example of filtering that allows matching two digits that represent the days of the month very precisely. The pattern will match any from `01-jan-2020` to `31-jan-2020` with all its capturing groups but `00` or `32-39` are excepted and have no capturing groups, allowing you to check if the pattern matched a valid date or not.
+```typescript
+    .settings({
+        template: '(day)-(month)-(year)'
+    })
+    .vars({
+        day: '[0-3][0-9]',
+        month: ['jan', 'feb', 'mar', /* ... */ 'dec'],
+        year: String.raw`(?:19|20)\d{2}\b`
+    })
+    .filter(['00','3[2-9]'])
+    .build();
+
+    >> /00|3[2-9](([0-3][0-9])-(jan|feb|mar|dec)-((?:19|20)\d{2}\b))/
+
+    pattern.match('01-jan-2020')
+    // matches: ['01-jan-2020','01-jan-2020','01','jan','2020'], with
+    // an index for every capturing group
+
+    pattern.match('32-jan-2020')
+    // matches: ['32'], no index 1 or higher
+```
 
 ### Wildcard Pattern
 Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.

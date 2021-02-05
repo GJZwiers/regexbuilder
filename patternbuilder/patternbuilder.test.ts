@@ -2,14 +2,31 @@ import { assertArrayIncludes, assertEquals } from "https://deno.land/std@0.83.0/
 import { Pattern } from './Pattern.ts';
 import { ExtendedRegExp } from "../extended-regexp/ExtendedRegExp.ts";
 
-Deno.test("PatternBuilder - builds pattern from template and data correctly", () => {
+Deno.test("PatternBuilder - builds pattern from template and vars correctly", () => {
     let pattern = Pattern.new()
         .settings({template: 'foo'})
         .vars({foo: 'bar'})
         .build();
 
     assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
-    assertEquals(pattern.test('bar'), true);
+});
+
+Deno.test("PatternBuilder - still builds pattern from template and vars correctly using deprecated method", () => {
+    let pattern = Pattern.new()
+        .settings({template: 'foo'})
+        .data({foo: 'bar'})
+        .build();
+
+    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
+});
+
+Deno.test("PatternBuilder - builds pattern from template and vars correctly using the template() shorthand", () => {
+    let pattern = Pattern.new()
+        .template('foo')
+        .vars({foo: 'bar'})
+        .build();
+
+    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
 });
 
 Deno.test("PatternBuilder - adds exception group correctly", () => {
@@ -19,7 +36,7 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
         .filter('baz')
         .build();
 
-        assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
+    assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
 });
 
 Deno.test("PatternBuilder - adds wildcard group correctly", () => {
@@ -29,7 +46,7 @@ Deno.test("PatternBuilder - adds wildcard group correctly", () => {
         .wildcard('b.*')
         .build();
 
-        assertEquals(pattern, new ExtendedRegExp(/bar|(b.*)/, 'foo|(wildcard)', false));
+    assertEquals(pattern, new ExtendedRegExp(/bar|(b.*)/, 'foo|(wildcard)', false));
 });
 
 Deno.test("PatternBuilder - returns multiple extended regexes on receiving multiple templates correctly", () => {
@@ -38,5 +55,5 @@ Deno.test("PatternBuilder - returns multiple extended regexes on receiving multi
         .vars({foo: 'bar'})
         .buildAll();
 
-        assertArrayIncludes(pattern, [new ExtendedRegExp(/bar/, 'foo', false), new ExtendedRegExp(/baz/, 'baz', false)]);
+    assertArrayIncludes(pattern, [new ExtendedRegExp(/bar/, 'foo', false), new ExtendedRegExp(/baz/, 'baz', false)]);
 });

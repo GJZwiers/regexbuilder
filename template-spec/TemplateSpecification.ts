@@ -19,7 +19,7 @@ abstract class SpecificationBase {
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    private var_symbol = (this.data.settings.symbol) ?? '';
+    protected var_symbol = (this.data.settings.symbol) ?? '';
 
     constructor(protected readonly data: SpecificationData) {
         super(data);
@@ -31,7 +31,7 @@ class DefaultSpecification extends SpecificationBase implements TemplateSpecific
         return this.buildLogic(parts);
     }
 
-    protected buildLogic(templateParts: string[]): string {       
+    protected buildLogic(templateParts: string[]): string {      
         const escape = /^\\/;
         return templateParts.map(t => {
             if (escape.test(t)) return t.replace(escape, '');
@@ -50,7 +50,7 @@ class DefaultSpecification extends SpecificationBase implements TemplateSpecific
     protected subPlaceholder(group: string): string { 
         return group.replace(/(?<!\\)\{\{(\w+)\}\}/g, (match: string, name: string) => {
             if (!this.data.placeholders[name]) {
-                console.warn(`(regexbuilder) Warning: undefined placeholder ${name} in regex data`);
+                console.warn(`(regexbuilder) Warning: undefined placeholder \"${name}\" in regex data`);
                 return match;
             }
             return this.buildVar(this.data.placeholders[name]);
