@@ -15,6 +15,7 @@ abstract class TemplateStringHandler {
     protected readonly brackets: BracketPosition[] = [];
     protected templateUnits: string[] = [];
     protected outerUnit: string[] = [];
+    protected tier = 0;
 
     constructor(protected readonly template: string, protected readonly openingBracket: Bracket) {} 
 
@@ -24,9 +25,7 @@ abstract class TemplateStringHandler {
         else if (this.openingBracket === '{') return '}';
         else return '>';
     }
-    /**
-     * @param index when working with a list of templates, used to get the one that created the matching pattern.
-     */
+
     protected extractTemplateGroups(index: number = 0): void {
         let template = (typeof this.template === 'string') ? this.template : this.template[index];
 
@@ -36,7 +35,6 @@ abstract class TemplateStringHandler {
             } else if (template[i] === this.closingBracketType()) {
                 let lastOpener: BracketPosition = this.brackets[this.brackets.length - 1];
                 let nestedUnit: string = template.slice(lastOpener.index, i + 1);
-                
                 template = this.removeNestedUnit(nestedUnit, template);
                 i -= nestedUnit.length;
                 this.brackets.pop();
@@ -45,9 +43,21 @@ abstract class TemplateStringHandler {
         }
     }
 
+    // outer units L -> R
+    // nested (inner) unit R -> L
     protected removeNestedUnit(nestedUnit: string, template: string): string {
-        this.outerUnit.unshift(nestedUnit);
+        if (this.noTierChange()) {
+            this.outerUnit.push(nestedUnit);
+        } else {
+            this.outerUnit.unshift(nestedUnit);
+            this.tier = this.brackets.length;
+        }
+
         return template.replace(nestedUnit, '');
+    }
+
+    protected noTierChange() {
+        return (this.tier === this.brackets.length);
     }
 
     protected finishOuterUnit(): void {

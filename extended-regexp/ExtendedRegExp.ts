@@ -1,6 +1,6 @@
 import { TemplateBracketHandler } from "../template-group-handler/TemplateStringHandler.ts";
 
-interface RegExpMatchMap {
+export interface RegExpMatchMap {
     full_match: string,
     [key: string]: string
 }
@@ -73,7 +73,7 @@ export class ExtendedRegExp {
      * Throughput method for String.match.
      * @param string 
      */
-    match(string: string): RegExpMatchArray | RegExpMatchMap | null {
+    match(string: string): RegExpMatchArray | null | RegExpMatchMap {
         if (this.automap) {
             return this.matchMap(string);
         }
@@ -106,7 +106,7 @@ export class ExtendedRegExp {
      * @param string 
      * @param limit
      */
-    split(string: string, limit: number | undefined): string[] {
+    split(string: string, limit?: number | undefined): string[] {
         return string.split(this.pattern, limit);
     }
 
@@ -116,9 +116,6 @@ export class ExtendedRegExp {
      * Returns the template string for this pattern.
      */
     getTemplate(): string {
-        if (Array.isArray(this.template)) {
-            return this.template.join(' --- ');
-        }
         return this.template;
     }
     /**
@@ -126,12 +123,14 @@ export class ExtendedRegExp {
      * Performs String.match(RegExp) but maps the matches to an object with the 
      * pattern's template capturing groups as keys.
      * 
-     * For example, when given RegExpMatchArray `['hello world', 'world']` with template `'greeting (region)'`,
-     *  the result will be `{ full_match: 'hello world', region: 'world'}`.
+     * For example, when given RegExpMatchArray  
+     * `['hello world', 'world']` with template `'greeting (region)'`,  
+     *  the result will be  
+     *  `{ full_match: 'hello world', region: 'world' }`.
      * @param {string} string
      */
     matchMap(string: string): RegExpMatchMap | null {
-        let matches = string.match(this.pattern);
+        const matches = string.match(this.pattern);
         if (!matches) return null;
         return this.map(matches);
     }
@@ -145,6 +144,10 @@ export class ExtendedRegExp {
     map(matches: RegExpMatchArray): RegExpMatchMap {
         const map: RegExpMatchMap = { full_match: matches[0] };
         const groupNames = new TemplateBracketHandler(this.template, '(').handleBrackets();
+        if (/\bfilter\b/.test(this.template)) {
+            throw new Error(`(regexbuilder) Error mapping template: Cannot map unnamed capturing group added with \"filter\" method. Please use
+             the indexes of the matches array instead when using a filter (valid matches in index 1, exceptions only in index 0).`);
+        }
         for (let [i, name] of groupNames.entries()) {
             map[name] = matches[i + 1];
         }

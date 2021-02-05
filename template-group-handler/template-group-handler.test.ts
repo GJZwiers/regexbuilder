@@ -53,6 +53,9 @@ Deno.test('TemplateBracketHandler - places nested groups in the right order for 
     res = handler._reset('((bar)foo)').handleBrackets();
     assertEquals(res, ['foo','bar']);
 
+    res = handler._reset('((bar)(foo))').handleBrackets();
+    assertEquals(res, ['','bar','foo']);
+
     res = handler._reset('((bar(baz))foo)').handleBrackets();
     assertEquals(res, ['foo','bar','baz']);
 
