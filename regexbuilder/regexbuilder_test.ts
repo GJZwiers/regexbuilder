@@ -1,5 +1,5 @@
 import { assertEquals, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { Regex } from './Regex.ts';
+import { Regex } from './regex.ts';
 
 Deno.test("RegexBuilder - adds capturing group correctly with capturing()", () => {
     assertEquals(Regex.new().capture('foo').build(), /(foo)/);
@@ -22,11 +22,11 @@ Deno.test("RegexBuilder - adds named group correctly", () => {
     assertEquals(Regex.new().namedGroup('foo', 'bar').build(), /(?<foo>bar)/);
 });
 
-Deno.test("RegexBuilder - compiles a build to a pattern correctly", () => {
+Deno.test("RegexBuilder - compiles a build to a regex correctly", () => {
     assertEquals(Regex.new().add('foo').build(), /foo/);
 });
 
-Deno.test("RegexBuilder - throws when building an invalid pattern", () => {
+Deno.test("RegexBuilder - throws when building an invalid regex", () => {
     assertThrows(() => {
         Regex.new().add('(foo').build();
     });

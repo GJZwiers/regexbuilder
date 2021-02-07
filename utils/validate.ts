@@ -1,3 +1,4 @@
+// TODO
 export function validatePattern(parts: string): void {
     let openers = 0, closers = 0;
     for (let i = 0; i < parts.length; i++) {

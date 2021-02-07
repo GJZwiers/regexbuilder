@@ -1,18 +1,12 @@
-interface OneOrMultiMap<T> {
-    [key: string]: T[] | T
-}
-
-type OneOrMultiple<T> = T[] | T
-
-interface PatternData extends OneOrMultiMap<string> {}
-
 interface PatternSettingsBase {
-    template: OneOrMultiple<string>
+    template: string | string[]
     flags?: string
 }
 
+type TemplateVarSymbol = '%' | '#' | '!' | '@';
+
 interface Symbol {
-    symbol?: TemplateVarSymbols
+    symbol?: TemplateVarSymbol
 }
 
 interface Maps {
@@ -27,6 +21,8 @@ interface PatternSettings extends PatternSettingsBase, Symbol, Maps, CustomSetti
     separator?: string
 }
 
-type TemplateVarSymbols = '%' | '#' | '!' | '@';
+interface PatternData {
+    [key: string]: string | string[]
+}
 
-export type { OneOrMultiple, OneOrMultiMap, TemplateVarSymbols, PatternData, PatternSettings }
+export type { PatternSettingsBase, TemplateVarSymbol, PatternSettings, CustomSetting, PatternData }

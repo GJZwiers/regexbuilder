@@ -1,7 +1,7 @@
 import { assertEquals, assertObjectMatch, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { ExtendedRegExp, RegExpMatchMap } from "./ExtendedRegExp.ts";
+import { ExtendedRegExp, RegExpMatchMap } from "./extended_regexp.ts";
 
-Deno.test("ExtendedRegExp - provides throughput to RegExp property", () => {
+Deno.test("ExtendedRegExp - provides throughput to RegExp properties", () => {
     const xregex = new ExtendedRegExp(/bar/, 'foo', false);
     assertEquals(xregex.global, false);
     assertEquals(xregex.dotAll, false);
@@ -20,7 +20,7 @@ Deno.test("ExtendedRegExp - provides throughput to RegExp property", () => {
     assertEquals(xregex.source, /bar/.source);
 
 });
-Deno.test("ExtendedRegExp - provides throughput to RegExp method", () => {
+Deno.test("ExtendedRegExp - provides throughput to RegExp methods", () => {
     const xregex = new ExtendedRegExp(/bar/, 'foo', false);
     assertEquals(xregex.test('bar'), true);
     assertEquals(xregex.exec('bar'), /bar/.exec('bar'));
@@ -56,11 +56,11 @@ Deno.test("ExtendedRegExp - maps matches with nested capturing groups", () => {
     const map = xregex.map(['foobar', 'foobar', 'foo']);
     assertObjectMatch(map, {bar: 'foo', foo: 'foobar'});
 });
-Deno.test("ExtendedRegExp - maps matches with nested capturing groups", () => {
-    const xregex = new ExtendedRegExp(/(bar)/, '(foo)', false);
-    const map = xregex.matchMap('bar');
-    assertObjectMatch(<RegExpMatchMap>map, {full_match: 'bar', foo: 'bar'});
-});
+// Deno.test("ExtendedRegExp - maps matches with capturing groups", () => {
+//     const xregex = new ExtendedRegExp(/(bar)/, '(foo)', false);
+//     const map = xregex.matchMap('bar');
+//     assertObjectMatch(<RegExpMatchMap>map, {full_match: 'bar', foo: 'bar'});
+// });
 Deno.test("ExtendedRegExp - throws error on mapping template with unnamed capturing group (added with filter method)", () => {
     const xregex = new ExtendedRegExp(/filter|((bar))/, 'filter|((foo))', false);
     assertThrows(() => {
