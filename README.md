@@ -22,9 +22,6 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Custom Variable Symbol](#custom-variable-symbol)
    * [Custom Separator Symbol](#custom-separator) 
 
-- [Customizing PatternBuilder](#customizing-patternbuilder)
-   * [Custom Template-Building Specification (Experimental)](#custom-template-building-specification-experimental)
-
 ---
 
 ## RegexBuilder
@@ -397,31 +394,4 @@ If you'd like to join the arrays defined in `vars` with something other than `|`
 .build()
 
 >> /one\s+two\s+three (?=bar)/
-```
-
-## Customizing PatternBuilder
-
-### Custom Template-Building Specification (Experimental)
-You can write your own implementation of how to build patterns from template strings. This can allow you to add extra logic or simplify PatternBuilder's default specification to only include what you need.
-
-To start with, any custom specification has to implement `TemplateSpecification`. This means it needs to have a `compose` method which takes a `string` parameter `template` and returns a `string`:
-```typescript
-interface TemplateSpecification {
-    compose(template: string): string;
-}
-```
-
-Then the builder can be constructed in a slightly more verbose way by adding the custom specification and providing it with an empty data object. After that you can start building as usual:
-```typescript
-let builder = new PatternBuilder(
-    new MyCustomSpecification({
-        settings:{template:'',flags:''},
-        vars:{},
-        placeholders:{}
-}));
-
-builder
-    .settings({template: 'foo'})
-    .vars({foo: 'bar'})
-    .build();
 ```

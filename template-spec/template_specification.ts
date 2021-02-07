@@ -1,26 +1,41 @@
 import { PatternData, PatternSettings } from '../pattern-data/interfaces.ts';
-import { toList } from "../utils/toList.ts";
+import { toList } from "../utils/to_list.ts";
 
 interface TemplateSpecification {
     compose(template: string): string;
 }
 
-interface UsesPlaceholders {
-    placeholders: PatternData;
+interface UsesCustom {
+    [key: string]: any;
 }
 
-interface SpecificationData extends UsesPlaceholders {
+interface SpecificationData extends UsesCustom {
     settings: PatternSettings;
     vars: PatternData;
 }
 
 abstract class SpecificationBase {
-    constructor(protected readonly data: SpecificationData) { }
+    protected var_symbol = this.data.settings.symbol ?? '';
+
+    constructor(protected readonly data: SpecificationData) {}
+
+    protected buildLogic(templateParts: string[]): string {       
+        const escape = /^\\/;
+        return templateParts.map(t => {
+            if (escape.test(t)) return t.replace(escape, '');
+            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
+            const values = this.data.vars[key];
+            if (!values) return t;
+            return this.buildVar(values);
+        }).join('');
+    }
+
+    protected buildVar(val: string[] | string): string {
+        return toList(val).join(this.data.settings.separator || '|');
+    }
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
-    protected var_symbol = (this.data.settings.symbol) ?? '';
-
     constructor(protected readonly data: SpecificationData) {
         super(data);
     }
@@ -43,10 +58,6 @@ class DefaultSpecification extends SpecificationBase implements TemplateSpecific
         }).join('');
     }
 
-    protected buildVar(val: string[] | string): string {
-        return toList(val).join(this.data.settings.separator || '|');
-    }
-
     protected subPlaceholder(group: string): string { 
         return group.replace(/(?<!\\)\{\{(\w+)\}\}/g, (match: string, name: string) => {
             if (!this.data.placeholders[name]) {
@@ -58,9 +69,7 @@ class DefaultSpecification extends SpecificationBase implements TemplateSpecific
     }
 }
 
-export class SimpleSpecification extends SpecificationBase implements TemplateSpecification {
-    private var_symbol = (this.data.settings.symbol) ?? '';
-
+class SimpleSpecification extends SpecificationBase implements TemplateSpecification {
     constructor(protected readonly data: SpecificationData) {
         super(data);
     }
@@ -70,22 +79,7 @@ export class SimpleSpecification extends SpecificationBase implements TemplateSp
         const parts = template.split(new RegExp(`([\\\\]?${this.var_symbol}(?:${keys}))`));
         return this.buildLogic(parts);
     }
-
-    protected buildLogic(templateParts: string[]): string {       
-        const escape = /^\\/;
-        return templateParts.map(t => {
-            if (escape.test(t)) return t.replace(escape, '');
-            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
-            const values = this.data.vars[key];
-            if (!values) return t;
-            return this.buildVar(values);
-        }).join('');
-    }
-
-    protected buildVar(val: string[] | string): string {
-        return toList(val).join(this.data.settings.separator || '|');
-    }
 }
 
 export type { TemplateSpecification, SpecificationData }
-export { DefaultSpecification }
+export { DefaultSpecification, SimpleSpecification }

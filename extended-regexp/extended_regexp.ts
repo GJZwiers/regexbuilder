@@ -1,16 +1,11 @@
-import { TemplateBracketHandler } from "../template-group-handler/TemplateStringHandler.ts";
+import { TemplateBracketHandler } from "../template-group-handler/template_string_handler.ts";
 
 export interface RegExpMatchMap {
     full_match: string,
     [key: string]: string
 }
 
-/**
- * Decorated JavaScript RegExp with additional methods and properties.
- * @param pattern - a regular expression.
- * @param template - a string template describing a regular expression structure.
- * @param automap - boolean flag that sets whether or not the pattern automatically maps arrays of matches.
- */
+/** Decorated JavaScript RegExp with additional methods and properties. */
 export class ExtendedRegExp {
     constructor(private readonly pattern: RegExp,
                 private readonly template: string,

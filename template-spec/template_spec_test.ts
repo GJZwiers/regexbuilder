@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { DefaultSpecification, SpecificationData } from "../template-spec/TemplateSpecification.ts";
+import { DefaultSpecification, SpecificationData } from "../template-spec/template_specification.ts";
 
 Deno.test("DefaultSpecification - builds template from data correctly", () => {
     let mock: SpecificationData = { 
@@ -90,6 +90,6 @@ Deno.test("DefaultSpecification - composes array of templates correctly", () => 
     };
     assertEquals(new DefaultSpecification(mock)
         .compose(mock.settings.template[0]), 'bar');
-        assertEquals(new DefaultSpecification(mock)
+    assertEquals(new DefaultSpecification(mock)
         .compose(mock.settings.template[1]), 'baz');
 });

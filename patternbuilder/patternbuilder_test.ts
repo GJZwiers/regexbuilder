@@ -1,6 +1,6 @@
 import { assertArrayIncludes, assertEquals } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { Pattern } from './Pattern.ts';
-import { ExtendedRegExp } from "../extended-regexp/ExtendedRegExp.ts";
+import { Pattern } from './pattern.ts';
+import { ExtendedRegExp } from "../extended-regexp/extended_regexp.ts";
 
 Deno.test("PatternBuilder - builds pattern from template and vars correctly", () => {
     let pattern = Pattern.new()

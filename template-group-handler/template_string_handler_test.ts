@@ -1,5 +1,5 @@
 import { assertArrayIncludes, assertEquals, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { Bracket, BracketPosition, TemplateBracketHandler } from './TemplateStringHandler.ts';
+import { Bracket, BracketPosition, TemplateBracketHandler } from './template_string_handler.ts';
 
 class MockHandler extends TemplateBracketHandler {
     protected brackets: BracketPosition[] = [];

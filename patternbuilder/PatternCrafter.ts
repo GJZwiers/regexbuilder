@@ -1,6 +1,6 @@
-import { ExtendedRegExp } from '../extended-regexp/ExtendedRegExp.ts';
-import { SpecificationData, TemplateSpecification } from '../template-spec/TemplateSpecification.ts';
-import { toList } from '../utils/toList.ts';
+import { ExtendedRegExp } from '../extended-regexp/extended_regexp.ts';
+import { SpecificationData, TemplateSpecification } from '../template-spec/template_specification.ts';
+import { toList } from '../utils/to_list.ts';
 
 class PatternCrafter {
     constructor(private readonly spec: TemplateSpecification, private readonly data: SpecificationData) {}
@@ -12,7 +12,7 @@ class PatternCrafter {
                 this.spec.compose(template), 
                 this.data.settings.flags ?? ''),
             template,
-            this.data.settings.map || false);
+            this.data.settings.map ?? false);
         });
     }
 }

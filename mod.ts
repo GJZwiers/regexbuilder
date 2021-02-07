@@ -1,3 +1,3 @@
-export { Regex } from './regexbuilder/Regex.ts';
-export { Pattern, PatternBuilder } from './patternbuilder/Pattern.ts';
-export * from './extended-regexp/ExtendedRegExp.ts';
+export { Regex } from './regexbuilder/regex.ts';
+export { Pattern } from './patternbuilder/pattern.ts';
+export * from './extended-regexp/extended_regexp.ts';
