@@ -47,7 +47,7 @@ Deno.test("RegexBuilder - adds character class correctly", () => {
     assertEquals(Regex.new().nonWhitespace().build(), /\S/);
     assertEquals(Regex.new().any().build(), /./);
     assertEquals(Regex.new().tab().build(), /\t/);
-    assertEquals(Regex.new().carrReturn().build(), /\r/);
+    assertEquals(Regex.new().carriageReturn().build(), /\r/);
     assertEquals(Regex.new().linefeed().build(), /\n/);
     assertEquals(Regex.new().formfeed().build(), /\f/);
     assertEquals(Regex.new().backspace().build(), /[\b]/);
@@ -61,9 +61,9 @@ Deno.test("RegexBuilder - adds character class correctly", () => {
     assertEquals(Regex.new().endsWith('foo').build(), /foo$/);
 });
 Deno.test("RegexBuilder - adds control character correctly", () => {
-    assertEquals(Regex.new().controlChar('A').build(), /\cA/);
+    assertEquals(Regex.new().ctrlChar('A').build(), /\cA/);
     assertThrows(() => {
-        return Regex.new().controlChar('0');
+        return Regex.new().ctrlChar('0');
     })
 });
 Deno.test("RegexBuilder - adds hexadecimal character correctly", () => {
@@ -73,16 +73,16 @@ Deno.test("RegexBuilder - adds hexadecimal character correctly", () => {
     })
 });
 Deno.test("RegexBuilder - adds UF16 code point correctly", () => {
-    assertEquals(Regex.new().UTF16('AAAA').build(), /\uAAAA/);
+    assertEquals(Regex.new().utf16('AAAA').build(), /\uAAAA/);
     assertThrows(() => {
-        return Regex.new().UTF16('ZZZZ');
+        return Regex.new().utf16('ZZZZ');
     })
 });
 Deno.test("RegexBuilder - adds unicode correctly assuming 'u' flag is set", () => {
     assertEquals(Regex.new().unicode('AAAA').build(), /\u{AAAA}/);
     assertEquals(Regex.new().unicode('AAAAA').build(), /\u{AAAAA}/);
     assertThrows(() => {
-        return Regex.new().UTF16('ZZZZ');
+        return Regex.new().utf16('ZZZZ');
     })
 });
 Deno.test("RegexBuilder - throws error on receiving invalid unicode", () => {

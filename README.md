@@ -96,21 +96,18 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .lineEnd()  
     
     >> /^foo$/
-```
-```typescript
-    .startsWith('foo')  >> /^foo/
-```
-```typescript
-    .endsWith('bar')    >> /bar$/
-```
 
-```typescript
+    .startsWith('foo')  >> /^foo/
+
+    .endsWith('bar')    >> /bar$/
+
     .add('foo')
     .lookahead('bar')
     // or
-    .followedBy('bar')
+    .followedBy('bar') >> /foo(?=bar)/
 
-    >> /foo(?=bar)/
+    .boundary()  >> /foo\b/
+    .negatedBoundary() >> /foo\B/
 ```
 
 ### Alternation
@@ -125,13 +122,44 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /(?=foo.bar.baz)/
 ```
 
-### Character Classes
+### Ranges
 ```typescript
     .class('abc');
     >> /[abc]/
 
     .negatedClass('abc');
     >> /[^abc]/
+```
+
+### Character Classes
+```typescript
+    .digit()        >> /\d/
+    
+    .word()         >> /\w/
+
+    .whitespace()   >> /\s/
+
+    .nonDigits()    >> /\D/
+    
+    .any()          >> /./
+
+    .digits(2)      >> /\d{2}/
+
+    .digits(2,3)    >> /\d{2,3}/
+
+    .digits(2,'*')  >> /\d{2,}/
+
+    .linefeed()     >> /\n/
+    .lf()           >> /\n/
+
+    .ctrlChar('A')  >> /\cA/
+
+    .hex('AA')      >> /\xAA/
+
+    .utf16('AAAA')  >> /\uAAAA/
+
+    .unicode('AAAA')
+    .flags('u')     >> /\u{AAAA}/u
 ```
 
 ### Quantifiers
@@ -153,7 +181,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /foo+/   // matches fo with 1 or more o's
 
     .oneZero()
-    >> /foo?/   // matches fo with 0 or 1 o
+    >> /foo?/   // matches fo with 0 or 1 more o
 
     .zeroPlus()
     .lazy()
