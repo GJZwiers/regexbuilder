@@ -21,6 +21,15 @@ Deno.test('TemplateBracketHandler - throws on receiving duplicates', () => {
     });
 });
 
+Deno.test('TemplateBracketHandler - throws on receiving duplicates', () => {
+    let handler = new MockHandler('{foo}{bar}', '{');
+    let handler2 = new MockHandler('[foo][bar]', '[');
+    let handler3 = new MockHandler('<foo><bar>', '<');
+    assertEquals(handler.handleBrackets().length, 2);
+    assertEquals(handler2.handleBrackets().length, 2);
+    assertEquals(handler3.handleBrackets().length, 2);
+});
+
 Deno.test('TemplateBracketHandler - handles a case with 0 capturing groups correctly', () => {
     let handler = new MockHandler('foo', '(');
     assertEquals(handler.handleBrackets().length, 0);
