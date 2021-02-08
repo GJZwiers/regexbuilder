@@ -20,6 +20,16 @@ Deno.test("PatternBuilder - still builds pattern from template and vars correctl
     assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
 });
 
+Deno.test("PatternBuilder - handles placeholders correctly", () => {
+    let pattern = Pattern.new()
+        .settings({template: 'foo'})
+        .vars({foo: '{{bar}}'})
+        .placeholders({bar: 'baz'})
+        .build();
+
+    assertEquals(pattern, new ExtendedRegExp(/baz/, 'foo', false));
+});
+
 Deno.test("PatternBuilder - builds pattern from template and vars correctly using the template() shorthand", () => {
     let pattern = Pattern.new()
         .template('foo')
@@ -35,8 +45,14 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
         .vars({foo: 'bar'})
         .filter('baz')
         .build();
-
     assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
+
+    let pattern2 = Pattern.new()
+        .settings({template: 'foo'})
+        .vars({foo: 'bar'})
+        .except('baz')
+        .build();
+    assertEquals(pattern2, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
 });
 
 Deno.test("PatternBuilder - adds wildcard group correctly", () => {

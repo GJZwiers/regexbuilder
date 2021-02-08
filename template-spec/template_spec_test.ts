@@ -1,10 +1,10 @@
 import { assertEquals } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { DefaultSpecification, SpecificationData } from "../template-spec/template_specification.ts";
+import { DefaultSpecification, SimpleSpecification, SpecificationData } from "../template-spec/template_specification.ts";
 
 Deno.test("DefaultSpecification - builds template from data correctly", () => {
-    let mock: SpecificationData = { 
-        vars: { foo: 'bar' }, 
+    let mock: SpecificationData = {
         settings: { template: 'foo' },
+        vars: { foo: 'bar' }, 
         placeholders: {}
     };
     let spec = new DefaultSpecification(mock);
@@ -19,6 +19,13 @@ Deno.test("DefaultSpecification - builds template from data correctly", () => {
     };
     let spec = new DefaultSpecification(mock);
     assertEquals(spec.compose(<string>mock.settings.template), '#foobar');
+
+    let mock2: SpecificationData = { 
+        settings: { template: 'foo', symbol: '#' },
+        vars: { foo: 'bar'}
+    };
+    let spec2 = new SimpleSpecification(mock2);
+    assertEquals(spec2.compose(<string>mock2.settings.template), 'bar');
 });
 
 Deno.test("DefaultSpecification - joins arrays correctly", () => {

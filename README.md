@@ -215,7 +215,7 @@ Templates are useful to separate concerns between a pattern's structure and valu
     .vars({
         expiration_statement: ['best-by','use-by','consume before','expiration date','expiry date'],
         day: '[0-3][0-9]',
-        month: ['jan', 'feb', 'mar', ..., 'dec'],
+        month: ['jan', 'feb', 'mar', /* ... */ 'dec'],
         year: String.raw`(?:19|20)\d{2}\b`  // Note that you will need double backslashes in a normal string 
     })
 ```
@@ -229,7 +229,7 @@ If the data you wish to match will have different formats it's also possible to 
     })
     .vars({
         day: '[0-3][0-9]',
-        month: ['jan', 'feb', 'mar', ..., 'dec'],
+        month: ['jan', 'feb', 'mar', /* ... */ 'dec'],
         year: String.raw`(?:19|20)\d{2}\b`
     })
     .buildAll();

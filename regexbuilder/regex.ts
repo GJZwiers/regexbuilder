@@ -13,7 +13,7 @@ const types = {
     close: ')'
 };
 
-function processGroupCode(type: groupCode): string {
+export function processGroupCode(type: groupCode): string {
     if (type === 'cg') {
         return types.cg;
     } else if (type === 'ncg') {
@@ -26,9 +26,8 @@ function processGroupCode(type: groupCode): string {
         return types.nla;
     } else if (type === 'nlb') {
         return types.nlb;
-    } else {
-        throw new Error(`Invalid group code: ${type}`);
     }
+    return '';
 }
 
 class Regex {
@@ -40,7 +39,20 @@ class Regex {
     }
     /** Joins the list of regex components together and compiles the resulting string to a RegExp with any flags that were provided. */
     compile(): RegExp {
-        return new RegExp(this.parts.join(''), this.flags);
+        let regexString = this.parts.join('');
+        this.check(regexString);
+        return new RegExp(regexString, this.flags);
+    }
+
+    private check(regex: string) {
+        const nulWithDigit = regex.match(/\\0[0-9]/);
+        if (nulWithDigit !== null) {
+            console.warn(`(regexbuilder) Warning: found a digit character after a nul character class ${nulWithDigit}`);
+        }
+        const unicode = regex.match(/\\u\{[0-9A-Z]{4,5}\}/);
+        if (unicode !== null && !/u/.test(this.flags)) {
+            console.warn(`(regexbuilder) Warning: found a unicode character class ${unicode} while the unicode flag is not set`)
+        }
     }
 }
 
@@ -97,6 +109,21 @@ class PatternGroupBuilder extends RegexBuilderBase {
 }
 
 class PatternAssertionBuilder extends RegexBuilderBase {
+    /** Adds a word boundary to the regex. */
+    boundary() {
+        this.regex.parts.push('\\b');
+        return this;
+    }
+    /** Adds a word boundary to the regex. */
+    negatedBoundary() {
+        this.regex.parts.push('\\B');
+        return this;
+    }
+    /** Adds the provided content to the regex within word boundaries `\bcontent\b` */
+    bordered(content: string) {
+        this.regex.parts.push(`\\b${content}\\b`);
+        return this;
+    }
     /** Adds a caret character, or start-of-the-line assertion, to the regex. */
     lineStart(): this {
         this.regex.parts.push('^');
@@ -157,8 +184,8 @@ class PatternAssertionBuilder extends RegexBuilderBase {
 
 class PatternAlternationBuilder extends RegexBuilderBase {
     /** Joins a list of strings to the end of the regex as alternates. */
-    alts(alts: string[] | RegExp[]): this {
-        alts.forEach((item: string | RegExp, index: number, arr: string[] | RegExp[]) => {
+    alts(alts: (string|RegExp)[]): this {
+        alts.forEach((item: string | RegExp, index: number, arr: (string|RegExp)[]) => {
             if (item instanceof RegExp) {
                 arr[index] = item.source;
             }
@@ -195,7 +222,161 @@ class RegexClassBuilder extends RegexBuilderBase {
     negatedClass(content: string | RegExp): this {
         this.regex.parts.push('[^', stringOrRegExp(content), ']'); 
         return this;
-     }
+    }
+}
+
+const charClasses = {
+    digit: '\\d',
+    nonDigit: '\\D',
+    word: '\\w',
+    nonWord: '\\W',
+    whitespace: '\\s',
+    nonWhitespace: '\\S',
+    tab: '\\t',
+    carrReturn: '\\r',
+    linefeed: '\\n',
+    formfeed: '\\f',
+    backspace: '[\\b]',
+    nul: '\\0'
+}
+
+class RegexCharacterClassBuilder extends RegexBuilderBase {
+    private handleCharClass(charClass: string, n?: number, m?:  number | '*'): void {
+        if (!n) this.regex.parts.push(charClass, `{1}`);
+        else if (!m)
+            this.regex.parts.push(charClass, `{${n.toString()}}`);
+        else if (!Number.isInteger(n) )
+            this.regex.parts.push(charClass, `{${Math.round(n).toString()}}`);
+        else if (typeof m === 'number' && !Number.isInteger(m))
+         this.regex.parts.push(charClass, `{${Math.round(m).toString()}}`);
+        else if (m === '*')
+            this.regex.parts.push(charClass, `{${n.toString()},}`);
+        else
+            this.regex.parts.push(charClass, `{${n.toString()},${m.toString()}}`);
+    }
+    /** Adds `\d` to the regex. */
+    digit(): this {
+        this.regex.parts.push(charClasses.digit);
+        return this;
+    }
+    /** Adds `\d` with a quantifier. */
+    digits(n?: number, m?: |  number | '*'): this {
+        this.handleCharClass(charClasses.digit, n, m);
+        return this;
+    }
+    /** Adds `\D` to the regex. */
+    nonDigit() {
+        this.regex.parts.push(charClasses.nonDigit);
+        return this;
+    }
+    /** Adds `\D` with a quantifier. */
+    nonDigits(n?: number, m?: |  number | '*') {
+        this.handleCharClass(charClasses.nonDigit, n, m);
+        return this;
+    }
+
+    word() {
+        this.regex.parts.push(charClasses.word);
+        return this;
+    }
+    /** Adds `\w` with a quantifier. */
+    words(n?: number, m?: |  number | '*') {
+        this.handleCharClass(charClasses.word, n, m);
+        return this;
+    }
+
+    nonWord() {
+        this.regex.parts.push(charClasses.nonWord);
+        return this;
+    }
+    /** Adds `\W` with a quantifier. */
+    nonWords(n?: number, m?: |  number | '*') {
+        this.handleCharClass(charClasses.nonWord, n, m);
+        return this;
+    }
+
+    any() {
+        this.regex.parts.push('.');
+		return this;
+    }
+
+    whitespace() {
+        this.regex.parts.push(charClasses.whitespace);
+		return this;
+    }
+    /** Adds `\s` with a quantifier. */
+    whitespaces(n?: number, m?: |  number | '*') {
+        this.handleCharClass(charClasses.whitespace, n, m);
+		return this;
+    }
+
+    nonWhitespace() {
+        this.regex.parts.push(charClasses.nonWhitespace);
+		return this;
+    }
+    /** Adds `\S` with a quantifier. */
+    nonWhitespaces(n?: number, m?: |  number | '*') {
+        this.handleCharClass(charClasses.nonWhitespace, n, m);
+		return this;
+    }
+
+    tab() {
+        this.regex.parts.push(charClasses.tab);
+		return this;
+    }
+
+    carrReturn() {
+        this.regex.parts.push(charClasses.carrReturn);
+		return this;
+    }
+
+    linefeed() {
+        this.regex.parts.push(charClasses.linefeed);
+		return this;
+    }
+
+    formfeed() {
+        this.regex.parts.push(charClasses.formfeed);
+		return this;
+    }
+
+    backspace() {
+        this.regex.parts.push(charClasses.backspace);
+		return this;
+    }
+
+    nul() {
+        this.regex.parts.push(charClasses.nul);
+		return this;
+    }
+
+    controlChar(x: string) {
+        if (!/[A-Z]/.test(x)) 
+            throw new Error(`(regexbuilder) Error: attempt to add invalid control character ${x}`);
+        this.regex.parts.push(`\\c${x}`);
+		return this;
+    }
+
+    hex(hh: string) {
+        if (!/^[0-9A-F]{2}$/.test(hh)) 
+            throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
+        this.regex.parts.push(`\\x${hh}`);
+		return this;
+    }
+
+    UTF16(hhhh: string) {
+        if (!/^[0-9A-F]{4}$/.test(hhhh)) 
+            throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
+        this.regex.parts.push(`\\u${hhhh}`);
+		return this;
+    }
+
+    unicode(hhhh: string) {
+        if (!/^[0-9A-F]{4,5}$/.test(hhhh)) 
+            throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
+        this.regex.parts.push(`\\u\{${hhhh}\}`);
+		return this;
+    }   
 }
 
 class RegexQuantifierBuilder extends RegexBuilderBase {
@@ -249,7 +430,7 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
     private checkModifier() {
         const previousToken = this.getPreviousToken();
         if (!/\{\d ?, ?\d\}|\{\d\}|\*|\+/.test(this.regex.parts[this.regex.parts.length - 1])) {
-            console.warn(`(regexbuilder) Warning: lazy modifier "?" was placed after "${previousToken}" which is not a quantifier. ` +
+            console.warn(`(regexbuilder) PlacementWarning: lazy modifier "?" was placed after "${previousToken}" which is not a quantifier. ` +
             'This will behave as a "one or zero" quantifier instead of a lazy modifier. ' +
             'If this is what you intend consider using the "oneZero()" method instead.');
         }
@@ -258,8 +439,8 @@ class RegexQuantifierBuilder extends RegexBuilderBase {
     private checkDouble() {
         const previousToken = this.getPreviousToken();
         if (/\{\d\}|\{\d,\s?\d\}$/.test(previousToken)) {
-            console.warn('(regexbuilder) Warning: A duplicate quantifier may have been added ' +
-            'to the regex. Make sure that you are not chaining quantifier methods.');
+            console.warn('(regexbuilder) PlacementWarning: A duplicate quantifier may have been added ' +
+            'to the regex. Check that you are not chaining quantifier methods.');
         }
     }
 
@@ -291,10 +472,7 @@ class NestedGroupBuilder extends RegexBuilderBase {
         this.changeNestState(1, types.cg);
         return this;
     }
-    /**
-     * Finishes a nested tier in the regex. An integer can be passed to complete multiple tiers at once 
-     * or an asterisk to finish all remaining nests.
-     */
+    /** Finishes a nested tier in the regex. An integer can be passed to complete multiple tiers at once or an asterisk to finish all remaining nests. */
     unnest(n?: undefined | number | '*'): this {
         if (!n || n === 0) {
             this.changeNestState(-1, types.close);
@@ -366,6 +544,7 @@ interface RegexBuilder extends FlagsBuilder,
     RegexClassBuilder,
     RegexQuantifierBuilder,
     RegexBackReferenceBuilder,
+    RegexCharacterClassBuilder,
     NestedGroupBuilder {}
 
 applyMixins(RegexBuilder, [
@@ -378,6 +557,7 @@ applyMixins(RegexBuilder, [
     RegexClassBuilder,
     RegexQuantifierBuilder,
     RegexBackReferenceBuilder,
+    RegexCharacterClassBuilder,
     NestedGroupBuilder ]);
 
 export { Regex, RegexBuilder }
