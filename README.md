@@ -8,6 +8,7 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Nesting](#nesting)  
    * [Assertions](#assertions)  
    * [Alternates](#alternation)
+   * [Ranges](#ranges)
    * [Character Classes](#character-classes)  
    * [Quantifiers](#quantifiers)  
    * [Backreferences](#backreferences)  
