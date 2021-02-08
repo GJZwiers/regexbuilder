@@ -36,7 +36,7 @@ Deno.test("RegexBuilder - adds any group other than named group correctly with g
     assertEquals(Regex.new().group('nlb', 'foo').build(), /(?<!foo)/);
 });
 Deno.test("RegexBuilder - adds named group correctly", () => {
-    assertEquals(Regex.new().namedGroup('foo', 'bar').build(), /(?<foo>bar)/);
+    assertEquals(Regex.new().namedCapture('foo', 'bar').build(), /(?<foo>bar)/);
 });
 Deno.test("RegexBuilder - adds character class correctly", () => {
     assertEquals(Regex.new().digit().build(), /\d/);
@@ -145,7 +145,7 @@ Deno.test("RegexBuilder - applies lazy modifier to a quantifier correctly", () =
 
 Deno.test("RegexBuilder - adds back reference correctly", () => {
     assertEquals(Regex.new().capture('foo').ref(1).build(), /(foo)\1/);
-    assertEquals(Regex.new().namedGroup('bar','foo').ref('bar').build(), /(?<bar>foo)\k<bar>/);
+    assertEquals(Regex.new().namedCapture('bar','foo').ref('bar').build(), /(?<bar>foo)\k<bar>/);
 });
 
 Deno.test("RegexBuilder - adds regex alternation correctly", () => {
