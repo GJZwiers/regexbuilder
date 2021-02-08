@@ -152,7 +152,7 @@ Deno.test("RegexBuilder - adds regex alternation correctly", () => {
     assertEquals(Regex.new().alts(['foo','bar']).build(), /foo|bar/);
     assertEquals(Regex.new().alts(['foo',/bar/]).build(), /foo|bar/);
     assertEquals(Regex.new().altGroup(['foo','bar'], 'ncg').build(), /(?:foo|bar)/);
-    assertEquals(Regex.new().joinGroup(['foo','bar'], 'ncg', '.').build(), /(?:foo.bar)/);
+    assertEquals(Regex.new().joinGroup(['foo','bar'], '.', 'ncg',).build(), /(?:foo.bar)/);
 });
 
 Deno.test("RegexBuilder - adds class correctly", () => {
