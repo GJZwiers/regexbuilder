@@ -18,6 +18,7 @@ export class RegexBuilder {
 }
 
 export interface RegexBuilder extends 
+    RegexBuilderBase,
     RegexFlagsBuilder,
     RegexPartBuilder,
     RegexGroupBuilder,

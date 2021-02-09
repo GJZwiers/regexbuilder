@@ -6,7 +6,7 @@ export class RegexBuilderBase {
     /** Finishes construction of a regular expression using the builder and returns the regex built. */
     build(): RegExp {
         if (this.nests > 0) {
-            throw new Error(`(regexbuilder) Error: Found unfinished nested structure in regex: ${this.regex.parts}`);
+            throw new Error(`(regexbuilder) Error: Found unfinished nested structure in regex`);
         }
         return this.regex.compile();
     }
