@@ -125,10 +125,10 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
 ### Ranges
 ```typescript
-    .class('abc');
+    .range('abc');
     >> /[abc]/
 
-    .negatedClass('abc');
+    .negatedRange('abc');
     >> /[^abc]/
 ```
 
