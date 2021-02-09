@@ -16,19 +16,6 @@ const charClasses = {
 };
 
 export class RegexCharacterClassBuilder extends RegexBuilderBase {  
-    private handleCharClass(charClass: string, n?: number, m?:  number | '*'): void {
-        if (!n) this.regex.parts.push(charClass, `{1}`);
-        else if (!m)
-            this.regex.parts.push(charClass, `{${n.toString()}}`);
-        else if (!Number.isInteger(n) )
-            this.regex.parts.push(charClass, `{${Math.round(n).toString()}}`);
-        else if (typeof m === 'number' && !Number.isInteger(m))
-         this.regex.parts.push(charClass, `{${Math.round(m).toString()}}`);
-        else if (m === '*')
-            this.regex.parts.push(charClass, `{${n.toString()},}`);
-        else
-            this.regex.parts.push(charClass, `{${n.toString()},${m.toString()}}`);
-    }
     /** Adds `\d` to the regex. */
     digit(): this {
         this.regex.parts.push(charClasses.digit);
@@ -107,6 +94,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
     /** Alias for carrReturn() */
     cr() {
         this.carriageReturn();
+        return this;
     }
     /** Adds `\n`. */
     linefeed() {
@@ -164,5 +152,19 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         }
         this.regex.parts.push(`\\u\{${hhhh}\}`);
 		return this;
-    }   
+    }
+
+    private handleCharClass(charClass: string, n?: number, m?:  number | '*'): void {
+        if (!n) this.regex.parts.push(charClass, `{1}`);
+        else if (!m)
+            this.regex.parts.push(charClass, `{${n.toString()}}`);
+        else if (!Number.isInteger(n) )
+            this.regex.parts.push(charClass, `{${Math.round(n).toString()}}`);
+        else if (typeof m === 'number' && !Number.isInteger(m))
+         this.regex.parts.push(charClass, `{${Math.round(m).toString()}}`);
+        else if (m === '*')
+            this.regex.parts.push(charClass, `{${n.toString()},}`);
+        else
+            this.regex.parts.push(charClass, `{${n.toString()},${m.toString()}}`);
+    }
 }

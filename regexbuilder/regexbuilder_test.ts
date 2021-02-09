@@ -1,5 +1,9 @@
-import { assertEquals, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
+import { assertArrayIncludes, assertEquals, assertStringIncludes, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
+import { groupCode } from "./process_group_code.ts";
 import { Regex } from './regex.ts';
+import { RegexBuilderBase } from "./regex_builder_base.ts";
+
+class MockBuilder extends RegexBuilderBase {}
 
 Deno.test("RegexBuilder - compiles a build to a regex correctly", () => {
     const re = Regex.new().add('foo').regex.compile();
@@ -9,6 +13,14 @@ Deno.test("RegexBuilder - throws when building an invalid regex", () => {
     assertThrows(() => {
         Regex.new().add('(foo').build();
     });
+});
+Deno.test("RegexBuilder - initializes correctly", () => {
+    const re = Regex.new();
+    assertEquals(re.regex instanceof Regex, true);
+    assertEquals(re.nests , 0);
+
+    const base = new MockBuilder();
+    assertEquals(base.regex instanceof Regex, true);
 });
 Deno.test("RegexBuilder - adds groups correctly", () => {
     assertEquals(Regex.new().capture('foo').build(), /(foo)/);
@@ -34,6 +46,10 @@ Deno.test("RegexBuilder - adds any group other than named group correctly with g
     assertEquals(Regex.new().group('lb', 'foo').build(), /(?<=foo)/);
     assertEquals(Regex.new().group('nla', 'foo').build(), /(?!foo)/);
     assertEquals(Regex.new().group('nlb', 'foo').build(), /(?<!foo)/);
+
+    assertThrows(() => {
+        Regex.new().group(<groupCode>'foo', 'foo').build(), /(?<!foo)/
+    });
 });
 Deno.test("RegexBuilder - adds named group correctly", () => {
     assertEquals(Regex.new().namedCapture('foo', 'bar').build(), /(?<foo>bar)/);
@@ -59,6 +75,11 @@ Deno.test("RegexBuilder - adds character class correctly", () => {
     assertEquals(Regex.new().lineEnd().build(), /$/);
     assertEquals(Regex.new().startsWith('foo').build(), /^foo/);
     assertEquals(Regex.new().endsWith('foo').build(), /foo$/);
+
+    assertEquals(Regex.new().cr().build(), Regex.new().carriageReturn().build());
+    assertEquals(Regex.new().lf().build(), Regex.new().linefeed().build());
+
+    assertEquals(Regex.new().nul().add('0').build(), /\00/);
 });
 Deno.test("RegexBuilder - adds control character correctly", () => {
     assertEquals(Regex.new().ctrlChar('A').build(), /\cA/);
@@ -104,8 +125,18 @@ Deno.test("Regexbuilder - adds a character class with a quantifier correctly", (
     assertEquals(Regex.new().nonWhitespaces().build(), /\S{1}/);
 })
 Deno.test("RegexBuilder - adds flags correctly", () => {
-    const re = Regex.new().add('foo').flags('gi').build();
-    assertEquals(re.flags, 'gi');
+    assertStringIncludes(Regex.new().global().regex.flags, 'g');
+    assertStringIncludes(Regex.new().caseInsensitive().regex.flags, 'i');
+
+    assertArrayIncludes(Regex.new().global().caseInsensitive().regex.flags.split(''), ['g','i']);
+    assertArrayIncludes(Regex.new().flags('gi').regex.flags.split(''), ['g','i']);
+
+    assertStringIncludes(Regex.new().multiline().regex.flags, 'm');
+    assertStringIncludes(Regex.new().unicodeFlag().regex.flags, 'u');
+    assertStringIncludes(Regex.new().sticky().regex.flags, 'y');
+    assertStringIncludes(Regex.new().dotAll().regex.flags, 's');
+
+    assertArrayIncludes(Regex.new().dotAll().global().multiline().regex.flags.split(''), ['s','g','m']);
 });
 Deno.test("RegexBuilder - handles user-specified separator for arrays", () => {
     assertEquals(Regex.new().joinWith(['foo','bar','baz'], '.').build(), /foo.bar.baz/);
@@ -138,9 +169,12 @@ Deno.test("RegexBuilder - adds quantifiers correctly", () => {
     assertEquals(Regex.new().add('foo').zeroPlus().build(), /foo*/);
     assertEquals(Regex.new().add('foo').onePlus().build(), /foo+/);
     assertEquals(Regex.new().add('foo').oneZero().build(), /foo?/);
+
+    assertEquals(Regex.new().add('foo').times(2).oneZero().build(), /foo{2}?/);
 });
 Deno.test("RegexBuilder - applies lazy modifier to a quantifier correctly", () => {
     assertEquals(Regex.new().add('foo').zeroPlus().lazy().build(), /foo*?/);
+    assertEquals(Regex.new().add('foo').lazy().build(), /foo?/);
 });
 
 Deno.test("RegexBuilder - adds back reference correctly", () => {
@@ -153,6 +187,7 @@ Deno.test("RegexBuilder - adds regex alternation correctly", () => {
     assertEquals(Regex.new().alts(['foo',/bar/]).build(), /foo|bar/);
     assertEquals(Regex.new().altGroup(['foo','bar'], 'ncg').build(), /(?:foo|bar)/);
     assertEquals(Regex.new().joinGroup(['foo','bar'], '.', 'ncg',).build(), /(?:foo.bar)/);
+    assertEquals(Regex.new().joinGroup(['foo','bar'], '.').build(), /foo.bar/);
 });
 
 Deno.test("RegexBuilder - adds class correctly", () => {
@@ -162,6 +197,6 @@ Deno.test("RegexBuilder - adds class correctly", () => {
 
 Deno.test("RegexBuilder - throws when trying to build while unnested tiers remain", () => {
     assertThrows(() => {
-        return Regex.new().nest().add('foo').build() ;
+        return Regex.new().nest().add('foo').build();
     });
 });

@@ -23,7 +23,7 @@ export class RegexNestBuilder extends RegexBuilderBase {
     }
     /** Combines methods `nest()` and `add()`. */
     nestAdd(part: string | RegExp, type: groupCode = 'cg'): this {
-        let grouptype = processGroupCode(type);
+        const grouptype = processGroupCode(type);
         this.changeNestState(1, grouptype);
         this.regex.parts.push(stringOrRegExp(part));
         return this;

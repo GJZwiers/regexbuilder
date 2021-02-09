@@ -66,6 +66,6 @@ export class RegexQuantifierBuilder extends RegexBuilderBase {
     }
 
     private getPreviousToken() {
-        return this.regex.parts[this.regex.parts.length - 1]
+        return this.regex.parts[this.regex.parts.length - 1];
     }
 }

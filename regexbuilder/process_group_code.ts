@@ -24,7 +24,7 @@ function processGroupCode(type: groupCode): string {
     } else if (type === 'nlb') {
         return groupStarters.nlb;
     }
-    return groupStarters.ncg;
+    throw new Error("(regexbuilder) Error: argument 'type' was not one of 'cg' | 'ncg' | 'la' | 'nla' | 'lb' | 'nlb'");
 }
 
 export { groupStarters, processGroupCode }

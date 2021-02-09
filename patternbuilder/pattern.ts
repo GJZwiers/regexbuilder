@@ -195,4 +195,4 @@ applyMixins(PatternBuilder, [
     PatternWildCardBuilder
 ]);
 
-export { Pattern, PatternBuilder }
+export { Pattern, PatternBuilder, PatternBuilderBase }
