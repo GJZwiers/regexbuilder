@@ -22,7 +22,7 @@ export class RegexFlagsBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds the 'u' flag to the regex. */
-    unicodeFlag(): this {
+    unicode(): this {
         this.regex.flags += 'u';
         return this;
     }
