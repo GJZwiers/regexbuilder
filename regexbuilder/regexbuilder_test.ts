@@ -40,15 +40,15 @@ Deno.test("RegexBuilder - supports regex literal input", () => {
     assertEquals(Regex.new().capture(/foo/).build(), /(foo)/);
 });
 Deno.test("RegexBuilder - adds any group other than named group correctly with group()", () => {
-    assertEquals(Regex.new().group('cg', 'foo').build(), /(foo)/);
-    assertEquals(Regex.new().group('ncg', 'foo').build(), /(?:foo)/);
-    assertEquals(Regex.new().group('la', 'foo').build(), /(?=foo)/);
-    assertEquals(Regex.new().group('lb', 'foo').build(), /(?<=foo)/);
-    assertEquals(Regex.new().group('nla', 'foo').build(), /(?!foo)/);
-    assertEquals(Regex.new().group('nlb', 'foo').build(), /(?<!foo)/);
+    assertEquals(Regex.new().group('foo', 'cg').build(), /(foo)/);
+    assertEquals(Regex.new().group('foo', 'ncg').build(), /(?:foo)/);
+    assertEquals(Regex.new().group('foo', 'la').build(), /(?=foo)/);
+    assertEquals(Regex.new().group('foo', 'lb').build(), /(?<=foo)/);
+    assertEquals(Regex.new().group('foo', 'nla').build(), /(?!foo)/);
+    assertEquals(Regex.new().group('foo', 'nlb').build(), /(?<!foo)/);
 
     assertThrows(() => {
-        Regex.new().group(<groupCode>'foo', 'foo').build(), /(?<!foo)/
+        Regex.new().group('foo', <groupCode>'foo').build()
     });
 });
 Deno.test("RegexBuilder - adds named group correctly", () => {
@@ -190,7 +190,10 @@ Deno.test("RegexBuilder - adds regex alternation correctly", () => {
     assertEquals(Regex.new().joinGroup(['foo','bar'], '.').build(), /foo.bar/);
 });
 
-Deno.test("RegexBuilder - adds class correctly", () => {
+Deno.test("RegexBuilder - adds range correctly", () => {
+    assertEquals(Regex.new().range('abc').build(), /[abc]/);
+    assertEquals(Regex.new().negatedRange('abc').build(), /[^abc]/);
+
     assertEquals(Regex.new().class('abc').build(), /[abc]/);
     assertEquals(Regex.new().negatedClass('abc').build(), /[^abc]/);
 });

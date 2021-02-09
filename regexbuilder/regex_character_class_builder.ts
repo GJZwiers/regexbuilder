@@ -1,6 +1,6 @@
 import { RegexBuilderBase } from "./regex_builder_base.ts";
 
-const charClasses = {
+export const charClasses = {
     digit: '\\d',
     nonDigit: '\\D',
     word: '\\w',
@@ -12,7 +12,10 @@ const charClasses = {
     linefeed: '\\n',
     formfeed: '\\f',
     backspace: '[\\b]',
-    nul: '\\0'
+    nul: '\\0',
+    controlChar: '\\c',
+    hex: '\\x',
+    unicode: '\\u'
 };
 
 export class RegexCharacterClassBuilder extends RegexBuilderBase {  
@@ -22,7 +25,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds `\d` with a quantifier. */
-    digits(n?: number, m?: |  number | '*'): this {
+    digits(n?: number, m?: number | '*'): this {
         this.handleCharClass(charClasses.digit, n, m);
         return this;
     }
@@ -32,7 +35,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds `\D` with a quantifier. */
-    nonDigits(n?: number, m?: |  number | '*') {
+    nonDigits(n?: number, m?: number | '*') {
         this.handleCharClass(charClasses.nonDigit, n, m);
         return this;
     }
@@ -42,7 +45,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds `\w` with a quantifier. */
-    words(n?: number, m?: |  number | '*') {
+    words(n?: number, m?: number | '*') {
         this.handleCharClass(charClasses.word, n, m);
         return this;
     }
@@ -52,7 +55,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds `\W` with a quantifier. */
-    nonWords(n?: number, m?: |  number | '*') {
+    nonWords(n?: number, m?: number | '*') {
         this.handleCharClass(charClasses.nonWord, n, m);
         return this;
     }
@@ -67,7 +70,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
 		return this;
     }
     /** Adds `\s` with a quantifier. */
-    whitespaces(n?: number, m?: |  number | '*') {
+    whitespaces(n?: number, m?: number | '*') {
         this.handleCharClass(charClasses.whitespace, n, m);
 		return this;
     }
@@ -77,7 +80,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
 		return this;
     }
     /** Adds `\S` with a quantifier. */
-    nonWhitespaces(n?: number, m?: |  number | '*') {
+    nonWhitespaces(n?: number, m?: number | '*') {
         this.handleCharClass(charClasses.nonWhitespace, n, m);
 		return this;
     }
@@ -126,7 +129,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         if (!/[A-Z]/.test(x)) {
             throw new Error(`(regexbuilder) Error: attempt to add invalid control character ${x}`);
         }
-        this.regex.parts.push(`\\c${x}`);
+        this.regex.parts.push(`${charClasses.controlChar}${x}`);
 		return this;
     }
     /** Adds `\xhh`. */
@@ -134,7 +137,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         if (!/^[0-9A-F]{2}$/.test(hh)) {
             throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
         }
-        this.regex.parts.push(`\\x${hh}`);
+        this.regex.parts.push(`${charClasses.hex}${hh}`);
 		return this;
     }
     /** Adds `\uhhhh`. */
@@ -142,7 +145,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         if (!/^[0-9A-F]{4}$/.test(hhhh)) {
             throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
         }
-        this.regex.parts.push(`\\u${hhhh}`);
+        this.regex.parts.push(`${charClasses.unicode}${hhhh}`);
 		return this;
     }
     /** Adds `\u{hhhh}` or `\u{hhhhh}`. */
@@ -150,7 +153,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
         if (!/^[0-9A-F]{4,5}$/.test(hhhh)) {
             throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
         }
-        this.regex.parts.push(`\\u\{${hhhh}\}`);
+        this.regex.parts.push(`${charClasses.unicode}\{${hhhh}\}`);
 		return this;
     }
 
