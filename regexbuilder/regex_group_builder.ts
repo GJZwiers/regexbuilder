@@ -19,8 +19,8 @@ export class RegexGroupBuilder extends RegexBuilderBase {
         return this;
     }
     /** Adds a group with content to the end of a regular expression. */
-    group(type: groupCode, content: string | RegExp) {
-        let grouptype = processGroupCode(type);
+    group(content: string | RegExp, groupCode: groupCode) {
+        const grouptype = processGroupCode(groupCode);
         this.regex.parts.push(grouptype, stringOrRegExp(content), groupStarters.close);
         return this;
     }

@@ -52,18 +52,15 @@ Adding regex literals together is also supported:
 To add groups either use the specific method call or use the more general `group` method where you provide the content and the group type:
 ```typescript
     .capture('foo');    >> /(foo)/
-```
-```typescript
-    .noncapture('bar');    >> /(?:bar)/
-```
 
-```typescript
+    .noncapture('bar');    >> /(?:bar)/
+
     .group('bar', 'ncg')    >> /(?:bar)/
 ```
 
-Named groups should be made with `namedGroup`:
+Named groups should be made with `namedCapture`:
 ```typescript
-    .namedGroup('foo', 'bar');    >> /(?<foo>bar)/
+    .namedCapture('foo', 'bar');    >> /(?<foo>bar)/
 ```
 
 ### Nesting
@@ -120,8 +117,10 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .altGroup(['foo', 'bar', 'baz'], 'ncg')
     >> /(?:foo|bar|baz)/
 
-    .joinGroup(['foo','bar','baz'], 'la', '.');
+    .joinGroup(['foo','bar','baz'], '.', 'la');
     >> /(?=foo.bar.baz)/
+    .joinGroup(['foo','bar','baz'], '.');   // Same as Array.join
+    >> /foo.bar.baz/
 ```
 
 ### Ranges
@@ -171,6 +170,9 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .linefeed()     >> /\n/
     .lf()           >> /\n/
 
+    .carriageReturn() >> /\r/
+    .cr()             >> /\r/
+
     .ctrlChar('A')  >> /\cA/
 
     .hex('AA')      >> /\xAA/
@@ -204,7 +206,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     .zeroPlus()
     .lazy()
-    >> /foo*?/   // matches fo with 0 or more o's using the lazy modifier
+    >> /foo*?/   // matches fo with 0 or more o's lazily (stops at first possible match)
 ```
 
 ### Back References
@@ -215,7 +217,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     >> /(foo)[: ]+\1/
 
-    .namedGroup('foo', 'bar')
+    .namedCapture('foo', 'bar')
     .add('[: ]+')
     .ref('foo')
 

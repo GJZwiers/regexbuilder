@@ -6,8 +6,8 @@ export class RegexAlternationBuilder extends RegexBuilderBase {
      * 
      *       .alts(['foo','bar']) >> /foo|bar/
     */
-    alts(alts: (string|RegExp)[]): this {
-        alts.forEach((item: string | RegExp, index: number, arr: (string|RegExp)[]) => {
+    alts(alts: (string | RegExp)[]): this {
+        alts.forEach((item: string | RegExp, index: number, arr: (string | RegExp)[]) => {
             if (item instanceof RegExp) {
                 arr[index] = item.source;
             }
@@ -19,8 +19,8 @@ export class RegexAlternationBuilder extends RegexBuilderBase {
      * 
      *       .altGroup(['foo','bar'], 'ncg') >> /(?:foo|bar)/
     */
-    altGroup(alts: string[], code: groupCode): this {
-        let grouptype = processGroupCode(code);
+    altGroup(alts: string[], groupCode: groupCode): this {
+        let grouptype = processGroupCode(groupCode);
         this.regex.parts.push(grouptype, alts.join('|'), groupStarters.close)
         return this;
     }
@@ -28,9 +28,9 @@ export class RegexAlternationBuilder extends RegexBuilderBase {
      * 
      *       .joinGroup(['foo','bar'], 'ncg', '-') >> /(?:foo-bar)/
     */
-    joinGroup(vals: string[], separator: string, code?: groupCode): this {
-        if (code) {
-            let grouptype = processGroupCode(code);
+    joinGroup(vals: string[], separator: string, groupCode?: groupCode): this {
+        if (groupCode) {
+            let grouptype = processGroupCode(groupCode);
             this.regex.parts.push(grouptype, vals.join(separator), groupStarters.close);
         } else {
             this.regex.parts.push(vals.join(separator));
