@@ -146,7 +146,7 @@ export class RegexCharacterClassBuilder extends RegexBuilderBase {
 		return this;
     }
     /** Adds `\u{hhhh}` or `\u{hhhhh}`. */
-    unicode(hhhh: string) {
+    unicodeChar(hhhh: string) {
         if (!/^[0-9A-F]{4,5}$/.test(hhhh)) {
             throw new Error("(regexbuilder) Error: attempt to add invalid hexadecimal characters");
         }

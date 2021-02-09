@@ -100,15 +100,15 @@ Deno.test("RegexBuilder - adds UF16 code point correctly", () => {
     })
 });
 Deno.test("RegexBuilder - adds unicode correctly assuming 'u' flag is set", () => {
-    assertEquals(Regex.new().unicode('AAAA').build(), /\u{AAAA}/);
-    assertEquals(Regex.new().unicode('AAAAA').build(), /\u{AAAAA}/);
+    assertEquals(Regex.new().unicodeChar('AAAA').build(), /\u{AAAA}/);
+    assertEquals(Regex.new().unicodeChar('AAAAA').build(), /\u{AAAAA}/);
     assertThrows(() => {
         return Regex.new().utf16('ZZZZ');
     })
 });
 Deno.test("RegexBuilder - throws error on receiving invalid unicode", () => {
     assertThrows(() => {
-        return Regex.new().unicode('000X');
+        return Regex.new().unicodeChar('000X');
     });
 });
 Deno.test("Regexbuilder - adds a character class with a quantifier correctly", () => {
@@ -132,7 +132,7 @@ Deno.test("RegexBuilder - adds flags correctly", () => {
     assertArrayIncludes(Regex.new().flags('gi').regex.flags.split(''), ['g','i']);
 
     assertStringIncludes(Regex.new().multiline().regex.flags, 'm');
-    assertStringIncludes(Regex.new().unicodeFlag().regex.flags, 'u');
+    assertStringIncludes(Regex.new().unicode().regex.flags, 'u');
     assertStringIncludes(Regex.new().sticky().regex.flags, 'y');
     assertStringIncludes(Regex.new().dotAll().regex.flags, 's');
 

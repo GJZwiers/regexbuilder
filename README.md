@@ -9,10 +9,11 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Assertions](#assertions)  
    * [Alternates](#alternation)
    * [Ranges](#ranges)
+   * [Flags](#flags)  
    * [Character Classes](#character-classes)  
    * [Quantifiers](#quantifiers)  
-   * [Backreferences](#backreferences)  
-   * [Flags](#flags)  
+   * [Back References](#back-references)  
+
 - [PatternBuilder](#patternbuilder)  
    * [Templates](#templates)  
    * [Placeholders](#placeholders)  
@@ -132,6 +133,23 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /[^abc]/
 ```
 
+### Flags
+```typescript
+    .add('foo')
+    .flags('g')
+    >> /foo/g
+
+    .global() >> /foo/g
+
+    .caseInsensitive() >> /foo/i
+
+    .multiline() >> /foo/m
+
+    .unicode() >> /foo/u
+
+    .sticky() >> /foo/y
+```
+
 ### Character Classes
 ```typescript
     .digit()        >> /\d/
@@ -159,7 +177,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     .utf16('AAAA')  >> /\uAAAA/
 
-    .unicode('AAAA')
+    .unicodeChar('AAAA')
     .flags('u')     >> /\u{AAAA}/u
 ```
 
@@ -189,7 +207,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     >> /foo*?/   // matches fo with 0 or more o's using the lazy modifier
 ```
 
-### Backreferences
+### Back References
 ```typescript
     .capture('foo')
     .add('[: ]+')
@@ -202,13 +220,6 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .ref('foo')
 
     >> /(?<foo>bar)[: ]+\k<foo>/
-```
-
-### Flags
-```typescript
-    .add('foo')
-    .flags('g')
-    >> /foo/g
 ```
 
 ---
