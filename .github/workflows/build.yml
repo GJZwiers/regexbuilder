@@ -29,4 +29,5 @@ jobs:
           token: ${{ secrets.codecov_token }}
           files: ./cov.lcov # optional
           fail_ci_if_error: true # optional (default = false)
-              
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov_token }}
