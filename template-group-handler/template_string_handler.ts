@@ -11,13 +11,13 @@ interface HandlesBrackets {
 
 export type Bracket = '(' | '[' | '{' | '<';
 
-abstract class TemplateStringHandler {
+export class TemplateStringHandler {
     protected readonly brackets: BracketPosition[] = [];
     protected templateUnits: string[] = [];
     protected outerUnit: string[] = [];
     protected tier = 0;
 
-    constructor(protected readonly template: string, protected readonly openingBracket: Bracket) {} 
+    constructor(protected template: string, protected readonly openingBracket: Bracket) {} 
 
     protected closingBracketType() {
         if (this.openingBracket === '(') return ')';
@@ -26,34 +26,32 @@ abstract class TemplateStringHandler {
         else return '>';
     }
 
-    protected extractTemplateGroups(index: number = 0): void {
-        let template = (typeof this.template === 'string') ? this.template : this.template[index];
-
-        for (let i = 0; i < template.length; i++) {
-            if (template[i] === this.openingBracket) {
-                this.brackets.push({bracket: template[i], index: i});
-            } else if (template[i] === this.closingBracketType()) {
+    extractTemplateGroups() {
+        for (let i = 0; i < this.template.length; i++) {
+            if (this.template[i] === this.openingBracket) {
+                this.brackets.push({bracket: this.template[i], index: i});
+            } else if (this.template[i] === this.closingBracketType()) {
                 let lastOpener: BracketPosition = this.brackets[this.brackets.length - 1];
-                let nestedUnit: string = template.slice(lastOpener.index, i + 1);
-                template = this.removeNestedUnit(nestedUnit, template);
+                let nestedUnit: string = this.template.slice(lastOpener.index, i + 1);
+                this.template = this.removeNestedUnit(nestedUnit);
                 i -= nestedUnit.length;
                 this.brackets.pop();
                 this.finishOuterUnit();
             }
         }
+        return this.templateUnits;
     }
 
     // outer units L -> R
     // nested (inner) unit R -> L
-    protected removeNestedUnit(nestedUnit: string, template: string): string {
+    protected removeNestedUnit(nestedUnit: string): string {
         if (this.noTierChange()) {
             this.outerUnit.push(nestedUnit);
         } else {
             this.outerUnit.unshift(nestedUnit);
             this.tier = this.brackets.length;
         }
-
-        return template.replace(nestedUnit, '');
+        return this.template.replace(nestedUnit, '');
     }
 
     protected noTierChange() {
@@ -91,6 +89,9 @@ class TemplateBracketHandler extends TemplateStringHandler implements HandlesBra
             })
             .map((e, i, arr) => {
                 return arr[i] = e.replace(/\(|\)|[!@#%]/g, '');
+            })
+            .filter(e => {
+                return !/^\\/.test(e);
             });
     }
 }

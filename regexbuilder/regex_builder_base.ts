@@ -1,6 +1,6 @@
 import { Regex } from "./regex.ts";
 
-export class RegexBuilderBase {
+export abstract class RegexBuilderBase {
     regex: Regex = new Regex();
     nests = 0;
     /** Finishes construction of a regular expression using the builder and returns the regex built. */

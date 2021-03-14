@@ -1,4 +1,4 @@
-import { TemplateBracketHandler } from "../template-group-handler/template_string_handler.ts";
+import { TemplateBracketHandler, TemplateStringHandler } from "../template-group-handler/template_string_handler.ts";
 
 export interface RegExpMatchMap {
     full_match: string,
@@ -7,9 +7,7 @@ export interface RegExpMatchMap {
 
 /** Decorated JavaScript RegExp with additional methods and properties. */
 export class ExtendedRegExp {
-    constructor(private readonly pattern: RegExp,
-                private readonly template: string,
-                private readonly automap: boolean) { }
+    constructor(private readonly pattern: RegExp, private readonly template: string) {}
 
     get dotAll(): boolean {
         return this.pattern.dotAll;
@@ -50,66 +48,38 @@ export class ExtendedRegExp {
     get unicode(): boolean {
         return this.pattern.unicode;
     }
-    /**
-     * Throughput method for RegExp.exec.
-     * @param string 
-     */
+    /** Throughput method for RegExp.exec. */
     exec(string: string): RegExpMatchArray | null {
         return this.pattern.exec(string);
     }
-    /**
-     * Throughput method for RegExp.test.
-     * @param string 
-     */
+    /** Throughput method for RegExp.test. */
     test(string: string): boolean {
         return this.pattern.test(string);
     }
-    /**
-     * Throughput method for String.match.
-     * @param string 
-     */
-    match(string: string): RegExpMatchArray | null | RegExpMatchMap {
-        if (this.automap) {
-            return this.matchMap(string);
-        }
+    /** Throughput method for String.match.  */
+    match(string: string): RegExpMatchArray | null {
         return string.match(this.pattern);
     }
-    /**
-     * Throughput method for String.matchAll.
-     * @param string 
-     */
+    /** Throughput method for String.matchAll. */
     matchAll(string: string): IterableIterator<RegExpMatchArray> {
         return string.matchAll(this.pattern);
     }
-    /**
-     * Throughput method for String.replace.
-     * @param string 
-     * @param replaceValue
-     */
+    /** Throughput method for String.replace. */
     replace(string: string, replaceValue: string): string {
         return string.replace(this.pattern, replaceValue);
     }
-    /**
-     * Throughput method for String.search.
-     * @param string 
-     */
+    /** Throughput method for String.search. */
     search(string: string): number {
         return string.search(this.pattern);
     }
-    /**
-     * Throughput method for String.split.
-     * @param string 
-     * @param limit
-     */
+    /** Throughput method for String.split. */
     split(string: string, limit?: number | undefined): string[] {
         return string.split(this.pattern, limit);
     }
 
-    // -----Additional methods-----
+    // -----Extended part-----
 
-    /**
-     * Returns the template string for this pattern.
-     */
+    /** Returns the template string for this pattern. */
     getTemplate(): string {
         return this.template;
     }
@@ -122,7 +92,6 @@ export class ExtendedRegExp {
      * `['hello world', 'world']` with template `'greeting (region)'`,  
      *  the result will be  
      *  `{ full_match: 'hello world', region: 'world' }`.
-     * @param {string} string
      */
     matchMap(string: string): RegExpMatchMap | null {
         const matches = string.match(this.pattern);
@@ -133,19 +102,23 @@ export class ExtendedRegExp {
      * @experimental
      * Maps an array of matches according to the template of the pattern.
      * Returns an object with a key for the full match and one for each capturing group in the template.
-     * Used implicitly in `matchMap()`
-     * @param matches - An array of regular expression matches.
+     * Called as part of `matchMap()`.
      */
     map(matches: RegExpMatchArray): RegExpMatchMap {
+        const templateVarNames = new TemplateBracketHandler(this.template, '(').handleBrackets();
         const map: RegExpMatchMap = { full_match: matches[0] };
-        const groupNames = new TemplateBracketHandler(this.template, '(').handleBrackets();
         if (/\bfilter\b/.test(this.template)) {
-            throw new Error(`(regexbuilder) Error mapping template: Cannot map unnamed capturing group added with \"filter\" method. Please use
-             the indexes of the matches array instead when using a filter (valid matches in index 1, exceptions only in index 0).`);
+            throw new Error(`(regexbuilder) TemplateMappingError: Cannot map unnamed capturing group added with \"filter()\". 
+            Please use the indexes of the matches array instead when using a filter.`);
         }
-        for (let [i, name] of groupNames.entries()) {
+        for (let [i, name] of templateVarNames.entries()) {
             map[name] = matches[i + 1];
         }
         return map;
+    }
+
+    static nests(str: string) {
+        const results = new TemplateStringHandler(str, '(').extractTemplateGroups();
+        console.log(results);
     }
 }

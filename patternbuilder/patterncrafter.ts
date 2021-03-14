@@ -11,8 +11,7 @@ class PatternCrafter {
             new RegExp(
                 this.spec.compose(template), 
                 this.data.settings.flags ?? ''),
-            template,
-            this.data.settings.map ?? false);
+            template);
         });
     }
 }
