@@ -24,8 +24,10 @@ jobs:
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
       - name: Upload coverage
-        uses: coverallsapp/github-action@v1.1.2
+        uses: codecov/codecov-action@v1
         with:
-          github-token: ${{ secrets.codecov_token }}
-          path-to-lcov: ./cov.lcov
-          
+          files: ./cov.lcov # optional
+          name: codecov-umbrella # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+              
