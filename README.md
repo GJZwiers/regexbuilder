@@ -1,4 +1,5 @@
 ![build](https://github.com/GJZwiers/regexbuilder-deno/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/gh/GJZwiers/regexbuilder-deno/branch/main/graph/badge.svg?token=W7JCODM23K)](https://codecov.io/gh/GJZwiers/regexbuilder-deno)
 
 This module provides two fluent builder interfaces to make regex patterns. RegexBuilder is used for piecewise building of a RegExp, while PatternBuilder is used to create extended regexes from string templates defined by the user.
 
