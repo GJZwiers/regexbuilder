@@ -1,4 +1,4 @@
-import { TemplateBracketHandler, TemplateStringHandler } from "../template-group-handler/template_string_handler.ts";
+import { TemplateBracketHandler } from "../template-group-handler/template_string_handler.ts";
 
 export interface RegExpMatchMap {
     full_match: string,
@@ -115,10 +115,5 @@ export class ExtendedRegExp {
             map[name] = matches[i + 1];
         }
         return map;
-    }
-
-    static nests(str: string) {
-        const results = new TemplateStringHandler(str, '(').extractTemplateGroups();
-        console.log(results);
     }
 }
