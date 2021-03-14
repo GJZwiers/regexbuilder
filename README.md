@@ -1,4 +1,5 @@
 ![build](https://github.com/GJZwiers/regexbuilder-deno/workflows/Build/badge.svg)
+[![codecov](https://codecov.io/gh/GJZwiers/regexbuilder-deno/branch/main/graph/badge.svg?token=W7JCODM23K)](https://codecov.io/gh/GJZwiers/regexbuilder-deno)
 
 This module provides two fluent builder interfaces to make regex patterns. RegexBuilder is used for piecewise building of a RegExp, while PatternBuilder is used to create extended regexes from string templates defined by the user.
 
@@ -17,10 +18,10 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
 - [PatternBuilder](#patternbuilder)  
    * [Templates](#templates)  
    * [Placeholders](#placeholders)  
-   * [Match Maps](#match-maps)
-   * [Automatic Mapping](#automatic-mapping)
-   * [Exceptions](#exceptions)  
-   * [Wildcard Pattern](#wildcard-pattern)
+   * [Match Maps](#match-maps-experimental)
+   * [Automatic Mapping](#automatic-mapping-experimental)
+   * [Exceptions](#exceptions-experimental)  
+   * [Wildcard Pattern](#wildcard-pattern-experimental)
    * [Custom Variable Symbol](#custom-variable-symbol)
    * [Custom Separator Symbol](#custom-separator) 
 
@@ -157,7 +158,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 
     .whitespace()   >> /\s/
 
-    .nonDigits()    >> /\D/
+    .nonDigit()    >> /\D/
     
     .any()          >> /./
 
@@ -261,7 +262,7 @@ Templates are useful to separate concerns between a pattern's structure and valu
         year: String.raw`(?:19|20)\d{2}\b`  // Note that you will need double backslashes in a normal string 
     })
 ```
-If the data you wish to match will have different formats it's also possible to define multiple templates and use `buildAll()` in place of `build()`. This will return an array of patterns. For example, if you are matching both American and European date formats:
+When the data you plan to match has different structures you can define multiple templates and use `buildAll()` instead of `build()`. This will return a list of patterns. For example, if you are matching both American and European date formats:
 ```typescript
     .settings({
         template: [
@@ -277,18 +278,15 @@ If the data you wish to match will have different formats it's also possible to 
     .buildAll();
 ```
 
-Picking a [template variable symbol](#custom-variable-symbol) is possible if you want to be more clear on which parts of a template are variables and which are not.
+Choosing a [template variable symbol](#custom-variable-symbol) is possible if you want to add more clarity on which parts of a template are variables and which aren't.
 
-When you don't need to use any settings and only want to define a template, you can also use `template` as a more concise route:
+When you only want to define a template and don't need to use any settings other, call `template()`:
 ```typescript
-Pattern.new()
     .template('(foo)(?!bar)')
-    .vars({ foo: 'bar', bar: 'baz'})
-    .build();
 ```
 
 ### Placeholders
-Declare a set of placeholder substitutes to reuse them in multiple patterns. Add placeholders to the data with double curly braces and a name: `{{placeholder}}`.
+Declare a set of placeholder substitutes to reuse them in multiple patterns. Adding placeholders to the data can be done with double curly braces and a name: `{{placeholder}}`.
 
 The example below shows how to reuse some of the data from the two previous patterns by using placeholders for `day`, `month` and `year`:
 ```typescript
@@ -339,7 +337,7 @@ const calendarDate = Pattern.new()
     ]
 ```
 
-### Match Maps
+### Match Maps (Experimental)
 Arrays of matches can be mapped to their pattern's template with the `matchMap` method:
 ```typescript
     .settings({ template: '(greeting) (region)' })
@@ -353,7 +351,7 @@ pattern.matchMap('hello world')
 >> { full_match: 'hello world', greeting: 'hello', region: 'world' }
 ```
 
-### Automatic Mapping
+### Automatic Mapping (Experimental)
 When the `map: true` setting is used a pattern will automatically map the array of matches.
 ```typescript
 let pattern = Pattern.new()
@@ -366,7 +364,7 @@ console.log(pattern.match('bar'));
 >> { full_match: 'bar', foo: 'bar' }
 ```
 
-### Exceptions
+### Exceptions (Experimental)
 Separate desired and unwanted values with the `filter` method. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding unwanted values to group 0 only.
 ```typescript
 .settings({ template: 'years'})
@@ -400,7 +398,7 @@ Below is another example of filtering that allows matching two digits that repre
     // matches: ['32'], no index 1 or higher
 ```
 
-### Wildcard Pattern
+### Wildcard Pattern (Experimental)
 Add a wildcard to be searched for after a set of known values. Note that this will restructure your template as `{the-rest-of-the-template}|(wildcard)`, adding a capture group but not changing the order of existing ones.
 ```typescript
 .settings({ template: 'years' })

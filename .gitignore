@@ -1,3 +1,4 @@
 .vscode/
 autosorter/
+cov/
 benchmarks.ts

@@ -2,13 +2,13 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, coverage]
   pull_request:
     branches: [main]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: setup Actions
         uses: actions/checkout@v2
@@ -18,5 +18,20 @@ jobs:
           deno-version: v1.x
       - name: run tests
         run: |
-          deno test -A
+          deno test -A --coverage=./cov --unstable
+
+      - name: Generate lcov
+        run: deno coverage --unstable --lcov ./cov > cov.lcov
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          github-token: ${{ secrets.codecov_token }}
+          path-to-lcov: ./cov.lcov
           
+          token: ${{ secrets.codecov_token }}
+          files: ./cov.lcov # optional
+          fail_ci_if_error: true # optional (default = false)
+          verbose: true # optional (default = false)
+        env:
+          CODECOV_TOKEN: ${{ secrets.codecov_token }}

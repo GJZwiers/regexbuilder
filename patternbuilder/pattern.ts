@@ -19,42 +19,35 @@ abstract class PatternBuilderBase {
     readonly pattern: Pattern = new Pattern();
     /** Builds the template into an extended regex object using the pattern's settings. */
     build(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp {
-        const specData = this.assembleData();
-        const specification = this.pickSpecification(specData, spec);
-
-        const crafted = new PatternCrafter(specification, specData).craft();
-        if (crafted.length === 0) throw new Error('Something went wrong crafting the pattern');
-        return crafted[0];
+        const patterns = this.buildPatterns(spec);
+        if (patterns.length === 0) throw new Error('(regexbuilder) Error: Something went wrong crafting the pattern');
+        return patterns[0];
     }
     /** Builds the templates into a list of extended regex objects using the pattern's settings. */
     buildAll(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp[] {
-        const specData = this.assembleData();
-        const specification = this.pickSpecification(specData, spec);
-        return new PatternCrafter(specification, specData).craft(); 
+        return this.buildPatterns(spec);
     }
 
+    protected buildPatterns(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp[] {
+        const data = this.assembleData();
+        const specification = (spec) ? new spec(data) : new DefaultSpecification(data);
+        return new PatternCrafter(specification, data).craft();
+    }
+    
     protected assembleData(): SpecificationData {
         return {
             settings: this.pattern.settings,
             vars: this.pattern.vars,
-            placeholders: this.pattern.placeholders || {}
+            placeholders: this.pattern.placeholders
         };
     }
 
-    protected pickSpecification(data: SpecificationData, spec?: new (...args: any[]) => TemplateSpecification) {
-       return (spec) ? new spec(data) : new DefaultSpecification(data);
-    }
-
     protected addTemplateVariable(target: string, data: string[] | string, input: string): void {
-        this.setKey(target, data);
+        this.pattern.vars[target] = data;
         this.changeTemplate(input);
     }
 
-    private setKey(target: string, data: string[] | string): void {
-        this.pattern.vars[target] = data;
-    }
-
-    private changeTemplate(value: string): void {
+    protected changeTemplate(value: string): void {
         this.pattern.settings.template = toList(this.pattern.settings.template)
             .map((t, i, template) => {
             return template[i] = value.replace('$template', t);
@@ -94,9 +87,7 @@ class PatternSettingsBuilder extends PatternBuilderBase {
 
 class PatternDataBuilder extends PatternBuilderBase {
     /**
-     * @deprecated
-     * Defines the data for a pattern. Any name in the template string will be replaced with the contents 
-     * of the equivalent name provided in this data.  
+     * @deprecated 
      * Deprecated: use `vars()` instead.
      */
     data(data: PatternData): this {
