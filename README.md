@@ -19,7 +19,7 @@ This module provides two fluent builder interfaces to make regex patterns. Regex
    * [Templates](#templates)  
    * [Placeholders](#placeholders)  
    * [Match Maps](#match-maps-experimental)
-   * [Automatic Mapping](#automatic-mapping-experimental)
+   <!-- * [Automatic Mapping](#automatic-mapping-experimental) -->
    * [Exceptions](#exceptions-experimental)  
    * [Wildcard Pattern](#wildcard-pattern-experimental)
    * [Custom Variable Symbol](#custom-variable-symbol)
@@ -351,7 +351,7 @@ pattern.matchMap('hello world')
 >> { full_match: 'hello world', greeting: 'hello', region: 'world' }
 ```
 
-### Automatic Mapping (Experimental)
+<!-- ### Automatic Mapping (Experimental)
 When the `map: true` setting is used a pattern will automatically map the array of matches.
 ```typescript
 let pattern = Pattern.new()
@@ -362,7 +362,7 @@ let pattern = Pattern.new()
 console.log(pattern.match('bar'));
 
 >> { full_match: 'bar', foo: 'bar' }
-```
+``` -->
 
 ### Exceptions (Experimental)
 Separate desired and unwanted values with the `filter` method. Note that this will restructure your template as `exclude|({the-rest-of-the-template})` and _place any desired full match in capture group 1_ while adding unwanted values to group 0 only.

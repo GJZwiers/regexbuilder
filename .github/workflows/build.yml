@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main, coverage]
+    branches: [main]
   pull_request:
     branches: [main]
 
@@ -28,12 +28,3 @@ jobs:
         with:
           github-token: ${{ secrets.github_token }}
           path-to-lcov: ./cov.lcov
-
-      # - name: Upload coverage
-      #   uses: codecov/codecov-action@v1
-      #   with:
-      #     token: ${{ secrets.codecov_token }}
-      #     files: ./cov.lcov # optional
-      #     fail_ci_if_error: true # optional (default = false)
-      #   env:
-      #     CODECOV_TOKEN: ${{ secrets.codecov_token }}
