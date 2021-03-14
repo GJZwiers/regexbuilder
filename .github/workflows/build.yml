@@ -24,10 +24,16 @@ jobs:
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: coverallsapp/github-action@v1.1.2
         with:
-          token: ${{ secrets.codecov_token }}
-          files: ./cov.lcov # optional
-          fail_ci_if_error: true # optional (default = false)
-        env:
-          CODECOV_TOKEN: ${{ secrets.codecov_token }}
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: ./cov.lcov
+
+      # - name: Upload coverage
+      #   uses: codecov/codecov-action@v1
+      #   with:
+      #     token: ${{ secrets.codecov_token }}
+      #     files: ./cov.lcov # optional
+      #     fail_ci_if_error: true # optional (default = false)
+      #   env:
+      #     CODECOV_TOKEN: ${{ secrets.codecov_token }}
