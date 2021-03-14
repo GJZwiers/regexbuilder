@@ -1,9 +1,5 @@
-import { PatternData, PatternSettings } from '../pattern-data/interfaces.ts';
+import { PatternSettings, PatternData } from '../pattern-data/interfaces.ts';
 import { toList } from "../utils/to_list.ts";
-
-interface TemplateSpecification {
-    compose(template: string): string;
-}
 
 interface UsesCustom {
     [key: string]: any;
@@ -19,20 +15,15 @@ abstract class SpecificationBase {
 
     constructor(protected readonly data: SpecificationData) {}
 
-    protected buildLogic(templateParts: string[]): string {       
-        const escape = /^\\/;
-        return templateParts.map(t => {
-            if (escape.test(t)) return t.replace(escape, '');
-            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
-            const values = this.data.vars[key];
-            if (!values) return t;
-            return this.buildVar(values);
-        }).join('');
-    }
+    protected abstract buildLogic(templateParts: string[]): string;
 
     protected buildVar(val: string[] | string): string {
         return toList(val).join(this.data.settings.separator || '|');
     }
+}
+
+interface TemplateSpecification {
+    compose(template: string): string;
 }
 
 class DefaultSpecification extends SpecificationBase implements TemplateSpecification {
@@ -53,7 +44,6 @@ class DefaultSpecification extends SpecificationBase implements TemplateSpecific
             const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
             const values = this.data.vars[key];
             if (!values) return t;
-            
             return this.subPlaceholder(this.buildVar(values));
         }).join('');
     }
@@ -78,6 +68,17 @@ class SimpleSpecification extends SpecificationBase implements TemplateSpecifica
         const keys = Object.keys(this.data.vars).join('|');
         const parts = template.split(new RegExp(`([\\\\]?${this.var_symbol}(?:${keys}))`));
         return this.buildLogic(parts);
+    }
+
+    protected buildLogic(templateParts: string[]): string {       
+        const escape = /^\\/;
+        return templateParts.map(t => {
+            if (escape.test(t)) return t.replace(escape, '');
+            const key = t.replace(new RegExp(`^${this.var_symbol}`), '');
+            const values = this.data.vars[key];
+            if (!values) return t;
+            return this.buildVar(values);
+        }).join('');
     }
 }
 

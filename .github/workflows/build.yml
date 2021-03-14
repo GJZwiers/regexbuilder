@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: setup Actions
         uses: actions/checkout@v2
@@ -18,5 +18,13 @@ jobs:
           deno-version: v1.x
       - name: run tests
         run: |
-          deno test -A
-          
+          deno test -A --coverage=./cov --unstable
+
+      - name: Generate lcov
+        run: deno coverage --unstable --lcov ./cov > cov.lcov
+
+      - name: Upload coverage
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ secrets.github_token }}
+          path-to-lcov: ./cov.lcov

@@ -15,7 +15,7 @@ Deno.test("PatternBuilder - builds pattern from template string and variables co
         .vars({foo: 'bar'})
         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
+    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo'));
 });
 
 Deno.test("PatternBuilder - builds pattern from template string and variables correctly using deprecated method", () => {
@@ -24,7 +24,7 @@ Deno.test("PatternBuilder - builds pattern from template string and variables co
         .data({foo: 'bar'})
         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
+    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo'));
 });
 
 Deno.test("PatternBuilder - handles placeholders correctly", () => {
@@ -34,7 +34,7 @@ Deno.test("PatternBuilder - handles placeholders correctly", () => {
         .placeholders({bar: 'baz'})
         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/baz/, 'foo', false));
+    assertEquals(pattern, new ExtendedRegExp(/baz/, 'foo'));
 });
 
 Deno.test("PatternBuilder - builds pattern from template and vars correctly using the template() shorthand", () => {
@@ -43,7 +43,7 @@ Deno.test("PatternBuilder - builds pattern from template and vars correctly usin
         .vars({foo: 'bar'})
         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo', false));
+    assertEquals(pattern, new ExtendedRegExp(/bar/, 'foo'));
 });
 
 Deno.test("PatternBuilder - adds exception group correctly", () => {
@@ -52,14 +52,14 @@ Deno.test("PatternBuilder - adds exception group correctly", () => {
         .vars({foo: 'bar'})
         .filter('baz')
         .build();
-    assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
+    assertEquals(pattern, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)'));
 
     const pattern2 = Pattern.new()
         .settings({template: 'foo'})
         .vars({foo: 'bar'})
         .except('baz')
         .build();
-    assertEquals(pattern2, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)', false));
+    assertEquals(pattern2, new ExtendedRegExp(/baz|(bar)/, 'filter|(foo)'));
 });
 
 Deno.test("PatternBuilder - adds wildcard group correctly", () => {
@@ -69,7 +69,7 @@ Deno.test("PatternBuilder - adds wildcard group correctly", () => {
         .wildcard('b.*')
         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/bar|(b.*)/, 'foo|(wildcard)', false));
+    assertEquals(pattern, new ExtendedRegExp(/bar|(b.*)/, 'foo|(wildcard)'));
 });
 
 Deno.test("PatternBuilder - returns multiple extended regexes on receiving multiple templates correctly", () => {
@@ -78,15 +78,15 @@ Deno.test("PatternBuilder - returns multiple extended regexes on receiving multi
         .vars({foo: 'bar'})
         .buildAll();
 
-    assertArrayIncludes(pattern, [new ExtendedRegExp(/bar/, 'foo', false), new ExtendedRegExp(/baz/, 'baz', false)]);
+    assertArrayIncludes(pattern, [new ExtendedRegExp(/bar/, 'foo'), new ExtendedRegExp(/baz/, 'baz')]);
 });
 
-Deno.test("PatternBuilder - adds wildcard group correctly", () => {
-    const pattern = Pattern.new()
-        .settings({template: '(foo)', map: true})
-        .vars({foo: 'bar'})
-        .build();
+// Deno.test("PatternBuilder - adds wildcard group correctly", () => {
+//     const pattern = Pattern.new()
+//         .settings({template: '(foo)', map: true})
+//         .vars({foo: 'bar'})
+//         .build();
 
-    assertEquals(pattern, new ExtendedRegExp(/(bar)/, '(foo)', true));
-    assertEquals(pattern.match('bar'), {full_match: 'bar', foo: 'bar'});
-});
+//     assertEquals(pattern, new ExtendedRegExp(/(bar)/, '(foo)'));
+//     assertEquals(pattern.match('bar'), {full_match: 'bar', foo: 'bar'});
+// });
