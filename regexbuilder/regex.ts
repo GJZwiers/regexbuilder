@@ -10,12 +10,12 @@ export class Regex {
     /** Joins the list of regex components together and compiles the resulting string to a RegExp with any flags that were provided. */
     compile(): RegExp {
         const regexString = this.parts.join('');
-        this.check(regexString);
+        this.analyze(regexString);
         return new RegExp(regexString, this.flags);
     }
 
-    private check(regex: string) {
-        const nulWithDigit = regex.match(/\\0[0-9]/);
+    private analyze(regex: string) {
+        const nulWithDigit = regex.match(/[^\\]\\0[0-9]/);
         if (nulWithDigit !== null) {
             console.warn(`(regexbuilder) Warning: found a digit character after a nul character class ${nulWithDigit}`);
         }

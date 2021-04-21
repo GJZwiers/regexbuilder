@@ -10,21 +10,21 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
-      - name: setup Actions
+      - name: Setup Actions
         uses: actions/checkout@v2
-      - name: setup Deno
+      - name: Setup Deno
         uses: denolib/setup-deno@v2
         with:
           deno-version: v1.x
-      - name: run tests
+      - name: Run tests
         run: |
-          deno test -A --coverage=./cov --unstable
+          deno test -A --unstable --coverage=./cov
 
-      - name: Generate lcov
+      - name: Generate .lcov file
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
-      - name: Upload coverage
-        uses: codecov/codecov-action@v1
+      - name: Upload coverage report
+        uses: coverallsapp/github-action@v1.1.2
         with:
           github-token: ${{ secrets.codecov_token }}
           path-to-lcov: ./cov.lcov

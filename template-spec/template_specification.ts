@@ -11,9 +11,11 @@ interface SpecificationData extends UsesCustom {
 }
 
 abstract class SpecificationBase {
-    protected var_symbol = this.data.settings.symbol ?? '';
+    protected var_symbol: string;
 
-    constructor(protected readonly data: SpecificationData) {}
+    constructor(protected readonly data: SpecificationData) {
+        this.var_symbol = this.data.settings.symbol ?? '';
+    }
 
     protected abstract buildLogic(templateParts: string[]): string;
 

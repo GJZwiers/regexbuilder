@@ -10,6 +10,7 @@ Deno.test("ExtendedRegExp - provides throughput to RegExp properties", () => {
     assertEquals(xregex.multiline, false);
     assertEquals(xregex.sticky, false);
     assertEquals(xregex.unicode, false);
+    assertEquals(xregex.hasIndices, false);
 
     assertEquals(xregex.flags, '');
 
