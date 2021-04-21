@@ -136,6 +136,8 @@ Deno.test("RegexBuilder - adds flags correctly", () => {
     assertStringIncludes(Regex.new().sticky().regex.flags, 'y');
     assertStringIncludes(Regex.new().dotAll().regex.flags, 's');
 
+    assertStringIncludes(Regex.new().indices().regex.flags, 'd');
+
     assertArrayIncludes(Regex.new().dotAll().global().multiline().regex.flags.split(''), ['s','g','m']);
 });
 Deno.test("RegexBuilder - handles user-specified separator for arrays", () => {

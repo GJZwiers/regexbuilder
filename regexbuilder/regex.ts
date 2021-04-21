@@ -15,7 +15,7 @@ export class Regex {
     }
 
     private analyze(regex: string) {
-        const nulWithDigit = regex.match(/[^\\]\\0[0-9]/);
+        const nulWithDigit = regex.match(/(?<!\\)\\0[0-9]/);
         if (nulWithDigit !== null) {
             console.warn(`(regexbuilder) Warning: found a digit character after a nul character class ${nulWithDigit}`);
         }
