@@ -25,6 +25,11 @@ export class ExtendedRegExp {
         return this.pattern.ignoreCase;
     }
 
+    get hasIndices(): boolean {
+        // @ts-ignore
+        return this.pattern.hasIndices;
+    }
+
     get lastIndex(): number {
         return this.pattern.lastIndex;
     }
