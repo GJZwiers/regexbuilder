@@ -24,7 +24,7 @@ jobs:
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
       - name: Upload coverage report
-        uses: coverallsapp/github-action@v1.1.2
+        uses: coverallsapp/github-action@master
         with:
           github-token: ${{ secrets.codecov_token }}
           path-to-lcov: ./cov.lcov
