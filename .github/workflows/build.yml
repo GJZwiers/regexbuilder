@@ -1,8 +1,6 @@
 name: Build
 
 on:
-  push:
-    branches: [main]
   pull_request:
     types: [ opened, edited, reopened, review_requested ]
 
@@ -12,15 +10,17 @@ jobs:
     steps:
       - name: Setup Actions
         uses: actions/checkout@v2
+
       - name: Setup Deno
         uses: denolib/setup-deno@v2
         with:
           deno-version: v1.x
+
       - name: Run tests
         run: |
           deno test -A --unstable --coverage=./cov
 
-      - name: Generate .lcov file
+      - name: Generate coverage report
         run: deno coverage --unstable --lcov ./cov > cov.lcov
 
       - name: Upload coverage report
