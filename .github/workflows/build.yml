@@ -28,10 +28,3 @@ jobs:
         with:
           github-token: ${{ secrets.codecov_token }}
           path-to-lcov: ./cov.lcov
-          
-          token: ${{ secrets.codecov_token }}
-          files: ./cov.lcov # optional
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
-        env:
-          CODECOV_TOKEN: ${{ secrets.codecov_token }}
