@@ -50,7 +50,7 @@ Adding regex literals together is also supported:
 ```
 
 ### Groups
-To add groups either use the specific method call or use the more general `group` method where you provide the content and the group type:
+To add groups either call the specific method or use the more general `group` method where you provide the content and the group type:
 ```typescript
     .capture('foo');    >> /(foo)/
 
@@ -59,26 +59,26 @@ To add groups either use the specific method call or use the more general `group
     .group('bar', 'ncg')    >> /(?:bar)/
 ```
 
-Named groups should be made with `namedCapture`:
+Named groups can be added with `namedCapture`:
 ```typescript
     .namedCapture('foo', 'bar');    >> /(?<foo>bar)/
 ```
 
 ### Nesting
-A nested structure in the pattern can be started by calling `nest` for a capture group or specific calls to nest a different group. Call `unnest` to finish a nested tier, or provide it with an integer to finish multiple tiers at once:
+A nested structure in the pattern can be started by calling `nest` for a capturing group or specific calls to nest different groups. Call `unnest` to finish a nested tier or provide it with an integer to finish multiple tiers at once:
 ```typescript
     Regex.new()
         .nest()
         .add('foo')
         .nestNonCapture()
         .add('bar')
-        .unnest()   // or use .unnest(2)
+        .unnest()   // or call .unnest(2)
         .unnest()
         .build()
 
         >> /(foo(?:bar))/
 ```
-This can be shortened by using composite calls such as `nestAdd` to combine `nest` and `add` in once call. If no group type is provided it will default to a capturing group, in other cases you need to provide the group type as the second argument. To nest a named group, use `nestNamed`.
+This can be shortened by using composite calls such as `nestAdd` to combine `nest` and `add` in one call. When no group type is passed it will default to a capturing group, in other cases you need to provide the group type as the second argument. To nest a named group, call `nestNamed`.
 ```typescript
     Regex.new()
         .nestAdd('foo')
@@ -90,6 +90,7 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
 ```
 
 ### Assertions
+
 ```typescript
     .lineStart()
     .add('foo')
@@ -148,6 +149,8 @@ This can be shortened by using composite calls such as `nestAdd` to combine `nes
     .unicode() >> /foo/u
 
     .sticky() >> /foo/y
+
+    .indices() >> /foo/d
 ```
 
 ### Character Classes
