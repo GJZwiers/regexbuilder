@@ -1,5 +1,5 @@
 ![build](https://github.com/GJZwiers/regexbuilder-deno/workflows/Build/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/GJZwiers/regexbuilder-deno/badge.svg?branch=coverage)](https://coveralls.io/github/GJZwiers/regexbuilder-deno?branch=coverage)
+[![Coverage Status](https://coveralls.io/repos/github/GJZwiers/regexbuilder-deno/badge.svg?branch=main)](https://coveralls.io/github/GJZwiers/regexbuilder-deno?branch=main)
 
 This module provides two fluent builder interfaces to make regex patterns. RegexBuilder is used for piecewise building of a RegExp, while PatternBuilder is used to create extended regexes from string templates defined by the user.
 
