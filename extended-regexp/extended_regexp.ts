@@ -1,7 +1,7 @@
 import { TemplateBracketHandler } from "../template-group-handler/template_string_handler.ts";
 
 export interface RegExpMatchMap {
-    full_match: string,
+    "full_match": string,
     [key: string]: string
 }
 
@@ -26,7 +26,7 @@ export class ExtendedRegExp {
     }
 
     get hasIndices(): boolean {
-        // @ts-ignore
+        // @ts-ignore V8 v9.0.0 feature
         return this.pattern.hasIndices;
     }
 
@@ -111,12 +111,12 @@ export class ExtendedRegExp {
      */
     map(matches: RegExpMatchArray): RegExpMatchMap {
         const templateVarNames = new TemplateBracketHandler(this.template, '(').handleBrackets();
-        const map: RegExpMatchMap = { full_match: matches[0] };
+        const map: RegExpMatchMap = { "full_match": matches[0] };
         if (/\bfilter\b/.test(this.template)) {
             throw new Error(`(regexbuilder) TemplateMappingError: Cannot map unnamed capturing group added with \"filter()\". 
             Please use the indexes of the matches array instead when using a filter.`);
         }
-        for (let [i, name] of templateVarNames.entries()) {
+        for (const [i, name] of templateVarNames.entries()) {
             map[name] = matches[i + 1];
         }
         return map;

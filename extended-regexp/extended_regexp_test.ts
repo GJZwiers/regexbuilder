@@ -1,5 +1,5 @@
 import { assertEquals, assertObjectMatch, assertThrows } from "https://deno.land/std@0.83.0/testing/asserts.ts";
-import { ExtendedRegExp, RegExpMatchMap } from "./extended_regexp.ts";
+import { ExtendedRegExp } from "./extended_regexp.ts";
 
 Deno.test("ExtendedRegExp - provides throughput to RegExp properties", () => {
     const xregex = new ExtendedRegExp(/bar/, 'foo');
