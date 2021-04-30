@@ -31,8 +31,8 @@ export class TemplateStringHandler {
             if (this.template[i] === this.openingBracket) {
                 this.brackets.push({bracket: this.template[i], index: i});
             } else if (this.template[i] === this.closingBracketType()) {
-                let lastOpener: BracketPosition = this.brackets[this.brackets.length - 1];
-                let nestedUnit: string = this.template.slice(lastOpener.index, i + 1);
+                const lastOpener: BracketPosition = this.brackets[this.brackets.length - 1];
+                const nestedUnit: string = this.template.slice(lastOpener.index, i + 1);
                 this.template = this.removeNestedUnit(nestedUnit);
                 i -= nestedUnit.length;
                 this.brackets.pop();

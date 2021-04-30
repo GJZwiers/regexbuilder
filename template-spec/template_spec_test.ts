@@ -2,34 +2,34 @@ import { assertEquals } from "https://deno.land/std@0.83.0/testing/asserts.ts";
 import { DefaultSpecification, SimpleSpecification, SpecificationData } from "../template-spec/template_specification.ts";
 
 Deno.test("DefaultSpecification - builds template from data correctly", () => {
-    let mock: SpecificationData = {
+    const mock: SpecificationData = {
         settings: { template: 'foo' },
         vars: { foo: 'bar' }, 
         placeholders: {}
     };
-    let spec = new DefaultSpecification(mock);
+    const spec = new DefaultSpecification(mock);
     assertEquals(spec.compose(<string>mock.settings.template), 'bar');
 });
 
 Deno.test("DefaultSpecification - builds template from data correctly", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         settings: { template: '\\#foo#moo', symbol: '#' },
         vars: { moo: 'bar'}, 
         placeholders: {}
     };
-    let spec = new DefaultSpecification(mock);
+    const spec = new DefaultSpecification(mock);
     assertEquals(spec.compose(<string>mock.settings.template), '#foobar');
 
-    let mock2: SpecificationData = { 
+    const mock2: SpecificationData = { 
         settings: { template: 'foo', symbol: '#' },
         vars: { foo: 'bar'}
     };
-    let spec2 = new SimpleSpecification(mock2);
+    const spec2 = new SimpleSpecification(mock2);
     assertEquals(spec2.compose(<string>mock2.settings.template), 'bar');
 });
 
 Deno.test("DefaultSpecification - joins arrays correctly", () => {
-    let mock = {
+    const mock = {
         vars: { foo: ['bar','baz'] },
         settings: { template: 'foo' },
         placeholders: {}
@@ -40,7 +40,7 @@ Deno.test("DefaultSpecification - joins arrays correctly", () => {
 });
 
 Deno.test("DefaultSpecification - substitutes placeholders correctly", () => {
-    let mock = { 
+    const mock = { 
         vars: {foo: ['{{bar}}', 'baz'] },
         settings: { template: 'foo' },
         placeholders: { bar: ['bar']}
@@ -50,7 +50,7 @@ Deno.test("DefaultSpecification - substitutes placeholders correctly", () => {
 });
 
 Deno.test("DefaultSpecification - does not replace non-existing placeholder", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         vars: {foo: ['{{bar}}', 'baz'] },
         settings: { template: 'foo' },
         placeholders:{ moo: ['bar']}
@@ -60,7 +60,7 @@ Deno.test("DefaultSpecification - does not replace non-existing placeholder", ()
 });
 
 Deno.test("DefaultSpecification - does not substitute placeholders edge case", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         vars: {foo: ['\\{{bar}}', 'baz'] },
         settings: { template: 'foo' },
         placeholders:{ bar: ['bar']}
@@ -70,7 +70,7 @@ Deno.test("DefaultSpecification - does not substitute placeholders edge case", (
 });
 
 Deno.test("DefaultSpecification - handles custom separator correctly", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         vars: { foo: ['bar','baz'] },
         settings: { template: 'foo', separator: '[: ]+' },
         placeholders: {}
@@ -80,7 +80,7 @@ Deno.test("DefaultSpecification - handles custom separator correctly", () => {
 });
 
 Deno.test("DefaultSpecification - handles custom template variable indicator correctly", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         vars: { foo: 'bar' },
         settings: { template: '#foo', symbol: '#' },
         placeholders: {}
@@ -90,7 +90,7 @@ Deno.test("DefaultSpecification - handles custom template variable indicator cor
 });
 
 Deno.test("DefaultSpecification - composes array of templates correctly", () => {
-    let mock: SpecificationData = { 
+    const mock: SpecificationData = { 
         vars: { foo: 'bar', bar: 'baz' },
         settings: { template: ['foo', 'bar'] },
         placeholders: {}

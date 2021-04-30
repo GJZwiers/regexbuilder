@@ -2,7 +2,7 @@ import { RegexBuilder } from "./regex_builder.ts";
 
 export class Regex {
     readonly parts: Array<string> = [];
-    flags: string = '';
+    flags = '';
     /** Starts construction of a regular expression through a fluent builder API by providing chainable methods. */
     static new(): RegexBuilder {
         return new RegexBuilder();

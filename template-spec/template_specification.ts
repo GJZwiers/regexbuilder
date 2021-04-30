@@ -2,6 +2,7 @@ import { PatternSettings, PatternData } from '../pattern-data/interfaces.ts';
 import { toList } from "../utils/to_list.ts";
 
 interface UsesCustom {
+    // deno-lint-ignore no-explicit-any
     [key: string]: any;
 }
 

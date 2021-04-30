@@ -14,6 +14,7 @@ interface Maps {
 }
 
 interface CustomSetting {
+    // deno-lint-ignore no-explicit-any
     [key: string]: any
 }
 

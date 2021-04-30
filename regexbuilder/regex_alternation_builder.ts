@@ -20,7 +20,7 @@ export class RegexAlternationBuilder extends RegexBuilderBase {
      *       .altGroup(['foo','bar'], 'ncg') >> /(?:foo|bar)/
     */
     altGroup(alts: string[], groupCode: groupCode): this {
-        let grouptype = processGroupCode(groupCode);
+        const grouptype = processGroupCode(groupCode);
         this.regex.parts.push(grouptype, alts.join('|'), groupStarters.close)
         return this;
     }
@@ -30,7 +30,7 @@ export class RegexAlternationBuilder extends RegexBuilderBase {
     */
     joinGroup(vals: string[], separator: string, groupCode?: groupCode): this {
         if (groupCode) {
-            let grouptype = processGroupCode(groupCode);
+            const grouptype = processGroupCode(groupCode);
             this.regex.parts.push(grouptype, vals.join(separator), groupStarters.close);
         } else {
             this.regex.parts.push(vals.join(separator));

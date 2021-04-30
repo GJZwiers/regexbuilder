@@ -18,16 +18,19 @@ class Pattern {
 abstract class PatternBuilderBase {
     readonly pattern: Pattern = new Pattern();
     /** Builds the template into an extended regex object using the pattern's settings. */
+    // deno-lint-ignore no-explicit-any
     build(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp {
         const patterns = this.buildPatterns(spec);
         if (patterns.length === 0) throw new Error('(regexbuilder) Error: Something went wrong crafting the pattern');
         return patterns[0];
     }
+
     /** Builds the templates into a list of extended regex objects using the pattern's settings. */
+    // deno-lint-ignore no-explicit-any
     buildAll(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp[] {
         return this.buildPatterns(spec);
     }
-
+    // deno-lint-ignore no-explicit-any
     protected buildPatterns(spec?: new (...args: any[]) => TemplateSpecification): ExtendedRegExp[] {
         const data = this.assembleData();
         const specification = (spec) ? new spec(data) : new DefaultSpecification(data);
