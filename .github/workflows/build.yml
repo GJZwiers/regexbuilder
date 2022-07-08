@@ -10,22 +10,22 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Setup Actions
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Setup Deno
-        uses: denolib/setup-deno@v2
+        uses: denoland/setup-deno@v1.1.0
         with:
           deno-version: v1.x
 
       - name: Lint
-        run: deno lint --unstable
+        run: deno lint
 
       - name: Test
         run: |
-          deno test -A --unstable --coverage=./cov
+          deno test --coverage=./cov
 
       - name: Generate coverage report
-        run: deno coverage --unstable --lcov ./cov > cov.lcov
+        run: deno coverage --lcov ./cov > cov.lcov
 
       - name: Upload coverage report
         uses: coverallsapp/github-action@master
